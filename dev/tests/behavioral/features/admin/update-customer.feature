@@ -24,8 +24,8 @@ Feature: Update customer feature
     And I wait for element with xpath "//*[@id='container']/div/div[4]/table/tbody/tr[2]/td[17]/a" to appear
     And I click on the element with xpath "//*[@id='container']/div/div[4]/table/tbody/tr[2]/td[17]/a"
 
-    And I wait for element with xpath "//*[@id='tab_customer']/span[1]" to appear
-    And I click on the element with xpath "//a[@id='tab_customer']"
+    And I wait for element with xpath "//a[@id='tab_customer'][1]" to appear
+    And I click on the element with xpath "//a[@id='tab_customer'][1]"
 
     #Account Information
     And I wait for element with xpath "//*[@id='container']/div/div/div[2]/div[2]/div/div[2]/fieldset/fieldset/div/div[1]/label/span" to appear
