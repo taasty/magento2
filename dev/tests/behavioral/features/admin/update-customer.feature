@@ -24,24 +24,22 @@ Feature: Update customer feature
     And I wait for element with xpath "//*[@id='container']/div/div[4]/table/tbody/tr[2]/td[17]/a" to appear
     And I click on the element with xpath "//*[@id='container']/div/div[4]/table/tbody/tr[2]/td[17]/a"
 
-    And I wait for element with xpath "//a[@id='tab_customer'][1]" to appear
-    And I click on the element with xpath "//a[@id='tab_customer'][1]"
+    #Create order
+    And I wait for element with xpath "//*[@id='order']/span" to appear
+    And I click on the element with xpath "//*[@id='order']/span"
 
-    #Account Information
-    And I wait for element with xpath "//*[@id='container']/div/div/div[2]/div[2]/div/div[2]/fieldset/fieldset/div/div[1]/label/span" to appear
-    And I select "Retailer" from "customer[group_id]"
+    #Add products
+    And I wait for element with xpath "//*[@id='order-items']/div[1]/div/button/span" to appear
+    And I click on the element with xpath "//*[@id='order-items']/div[1]/div/button/span"
 
-    And I check "customer[disable_auto_group_change]"
-    And I fill in the following:
-      | customer[prefix]           | 123456789                |
-      | customer[middlename]       | Anabella                 |
-      | customer[suffix]           | AL                       |
+    And I wait for element with xpath "//*[@id='id_2044']" to appear
+    And I click on the element with xpath "//*[@id='id_2044']"
 
-    And I fill in the following:
-      | customer[taxvat]           | 123456789012             |
-    And I select "Female" from "customer[gender]"
+    And I wait for element with xpath "//*[@id='order-shipping-method-summary']/a/span" to appear
+    And I click on the element with xpath "//*[@id='order-shipping-method-summary']/a/span"
 
-    And I wait for element with xpath "//*[@id='save']" to appear
-    And I click on the element with xpath "//*[@id='save']"
-
-    And I wait for element with xpath "//*[@id='messages']/div/div/div" to appear
+    #Submit button
+    And I wait for element with xpath "//div[@class='order-totals-actions']//button[@class='action-default scalable save primary']" to appear
+    And I click on the element with xpath "//div[@class='order-totals-actions']//button[@class='action-default scalable save primary']"
+ 
+    And I wait for element with xpath "//*[@id='order-shipping_method']/div[2]/strong" to appear
