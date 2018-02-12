@@ -20,26 +20,24 @@ Feature: Update customer feature
     And I wait for element with xpath "//*[@id='menu-magento-customer-customer']/div/ul/li[1]/a/span" to appear
     And I click on the element with xpath "//*[@id='menu-magento-customer-customer']/div/ul/li[1]/a/span"
 
-    #Edit Customers
-    And I wait for element with xpath "//*[@id='container']/div/div[4]/table/tbody/tr[2]/td[17]/a" to appear
-    And I click on the element with xpath "//*[@id='container']/div/div[4]/table/tbody/tr[2]/td[17]/a"
+    #Add New Customer
+    And I wait for element with xpath "//*[@id='add']/span" to appear
+    And I click on the element with xpath "//*[@id='add']/span"
 
     #Create order
-    And I wait for element with xpath "//*[@id='order']/span" to appear
-    And I click on the element with xpath "//*[@id='order']/span"
+    And I wait for element with xpath "//*[@name='customer[prefix]']" to appear
+    And I fill in the following:
+      | customer[prefix]           | 123456789                |
+      | customer[firstname]        | Anabella                 |
+      | customer[lastname]         | Smith                    |
+      | customer[email]            | ab@gmail.com             |
+      | customer[taxvat]           | 1234567                  |
 
-    #Add products
-    And I wait for element with xpath "//*[@id='order-items']/div[1]/div/button/span" to appear
-    And I click on the element with xpath "//*[@id='order-items']/div[1]/div/button/span"
+    And I select "Female" from "customer[gender]"
 
-    And I wait for element with xpath "//*[@id='id_2044']" to appear
-    And I click on the element with xpath "//*[@id='id_2044']"
+    #Save New Customer
+    And I wait for element with xpath "//*[@id='save']/span/span" to appear
+    And I click on the element with xpath "//*[@id='save']/span/span"
 
-    And I wait for element with xpath "//*[@id='order-shipping-method-summary']/a/span" to appear
-    And I click on the element with xpath "//*[@id='order-shipping-method-summary']/a/span"
-
-    #Submit button
-    And I wait for element with xpath "//div[@class='order-totals-actions']//button[@class='action-default scalable save primary']" to appear
-    And I click on the element with xpath "//div[@class='order-totals-actions']//button[@class='action-default scalable save primary']"
- 
-    And I wait for element with xpath "//*[@id='order-shipping_method']/div[2]/strong" to appear
+    And I wait for element with xpath "//*[@id='messages']/div/div/div" to appear
+  
