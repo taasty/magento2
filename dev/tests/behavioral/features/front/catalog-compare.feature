@@ -1,4 +1,4 @@
-@javascript
+@javascript @skip
 Feature: Catalog category compare
 
   Scenario: Compare products

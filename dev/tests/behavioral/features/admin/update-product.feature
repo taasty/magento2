@@ -1,4 +1,4 @@
-@javascript
+@javascript @skip
 Feature: Update product feature
 
   Scenario: Update product (admin side)

@@ -1,4 +1,4 @@
-@javascript
+@javascript @skip
 Feature: Product purchase
 
   Scenario: Purchase products
