@@ -1,7 +1,7 @@
 @javascript
 Feature: Catalog category filters
 
-  Scenario: Filtering products
+  Scenario: User filters products
 
     Given I am on "/index.php/women.html"
 

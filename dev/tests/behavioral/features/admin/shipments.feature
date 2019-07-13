@@ -1,7 +1,7 @@
 @javascript
-Feature: Shipments feature
+Feature: Shipment functionality
 
-  Scenario: Shipments (admin side)
+  Scenario: Magento admin ships the order
 
     Given I am on "http://magento.vm/index.php/admin/admin/index/index/key/509d07fe462fb9526fa8419f968a4373fdb9e162fb47fd7845b3de2f8d550be4/"
 

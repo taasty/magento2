@@ -1,7 +1,7 @@
 @javascript
-Feature: Update customer feature
+Feature: Customer update
 
-  Scenario: Update customer (admin side)
+  Scenario: Magento admin modifies customer's account
 
     Given I am on "http://magento.vm/index.php/admin/admin/index/index/key/509d07fe462fb9526fa8419f968a4373fdb9e162fb47fd7845b3de2f8d550be4/"
 

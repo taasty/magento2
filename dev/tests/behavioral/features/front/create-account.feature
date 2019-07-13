@@ -1,7 +1,7 @@
 @javascript
-Feature: Create account
+Feature: Customer accounts functionality
 
-  Scenario: Create account
+  Scenario: User registers as a customer
 
     Given I am on "/"
 
