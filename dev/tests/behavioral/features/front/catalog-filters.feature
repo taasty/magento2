@@ -3,7 +3,8 @@ Feature: Catalog category filters
 
   Scenario: User filters products
 
-    Given I am on "/index.php/women.html"
+    Given I am on "/"
+    And I wait for page to load "/"
     And I hover over element "//nav[@class='navigation']//span[contains(text(),'Women')]"
     And I wait for element with xpath "//nav[@class='navigation']//span[contains(text(),'Tops')]" to appear
     Then I hover over element "//nav[@class='navigation']//span[contains(text(),'Tops')]"
