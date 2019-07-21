@@ -1,7 +1,7 @@
 @javascript
 Feature: Shipment functionality
 
-  Scenario: Magento admin ships the order
+  Scenario: Magento admin updates customer's billing information
 
     Given I am on "http://magento.vm/index.php/admin/admin/index/index/key/509d07fe462fb9526fa8419f968a4373fdb9e162fb47fd7845b3de2f8d550be4/"
 
@@ -10,52 +10,46 @@ Feature: Shipment functionality
       | login[username]           | demo                |
       | login[password]           | demoPwd0            |
 
-    And I wait for element with xpath "//*[@id='login-form']/fieldset/div[3]/div[1]/button/span" to appear
-    And I click on the element with xpath "//*[@id='login-form']/fieldset/div[3]/div[1]/button/span"
+    And I click on the element with xpath "//form[@id='login-form']//span[contains(text(),'Sign in')]"
 
-    #Sales
-    And I wait for element with xpath "//*[@id='menu-magento-sales-sales']/a" to appear
-    And I click on the element with xpath "//*[@id='menu-magento-sales-sales']/a"
-
-    And I wait for element with xpath "//*[@id='menu-magento-sales-sales']/div/ul/li/div/ul/li[3]/a/span" to appear
-    And I click on the element with xpath "//*[@id='menu-magento-sales-sales']/div/ul/li/div/ul/li[3]/a/span"
+    #Sales > Shipments
+    And I click on the element with xpath "//li[@data-ui-id='menu-magento-sales-sales']//span[contains(text(),'Sales')]"
+    And I click on the element with xpath "//li[@data-ui-id='menu-magento-sales-sales-shipment']//span[contains(text(),'Shipments')]"
 
     #Shipments
-    And I wait for element with xpath "//*[@id='container']/div/div[3]/table/tbody/tr[1]/td[8]/a" to appear
-    And I click on the element with xpath "//*[@id='container']/div/div[3]/table/tbody/tr[1]/td[8]/a"
-
-    And I wait for element with xpath "//*[@id='container']/section[2]/div[2]/div[1]/div/div/a" to appear
-    And I click on the element with xpath "//*[@id='container']/section[2]/div[2]/div[1]/div/div/a"
+    And I wait for element with xpath "//table[@class='data-grid data-grid-draggable']//tr[td/div/text()[contains(.,'000000001')]]//a[contains(text(), 'View')]" to appear
+    And I click on the element with xpath "//table[@class='data-grid data-grid-draggable']//tr[td/div/text()[contains(.,'000000001')]]//a[contains(text(), 'View')]"
+    And I click on the element with xpath "//div[span/text()[contains(.,'Billing Address')]]//a[contains(text(),'Edit')]"
 
     #Change address
     And I wait for element with xpath "//*[@id='container']/fieldset/legend/span" to appear
     And I fill in the following:
-      | prefix                    | 123456789                |
-      | company                   | TestTest                 |
-      | street[0]                 | 7865 Main street         |
+      | prefix                    | Mrs                      |
+      | company                   | The ADT Corporation      |
+      | street[0]                 | 1501 Yamato Rd           |
     And I select "Florida" from "region_id"
     And I fill in the following:
-      | postcode                  | 121212-1212              |
-      | telephone                 | (555) 111-1111           |
-      | fax                       | (555) 999-0000           |
+      | postcode                  | 33431                    |
+      | telephone                 | (561) 402-0338           |
+      | fax                       | (561) 404-0372           |
 
-    And I wait for element with xpath "//*[@id='save']/span/span" to appear
-    And I click on the element with xpath "//*[@id='save']/span/span"
-    And I wait for element with xpath "//*[@id='messages']/div/div/div" to appear
+    And I click on the element with xpath "//div[@class='page-actions-buttons']//span[contains(text(),'Save Order Address')]"
+
+    #Assertion
+    And I wait for element with xpath "//div[@class='messages']//div[contains(text(),'You updated the order address.')]" to appear
 
     #Invoices
-    And I wait for element with xpath "//*[@id='sales_order_view_tabs_order_invoices']/span[1]" to appear
-    And I click on the element with xpath "//*[@id='sales_order_view_tabs_order_invoices']/span[1]"
+    And I click on the element with xpath "//ul[@role='tablist']//span[contains(text(),'Invoices')]"
 
     And I wait for element with xpath "//*[@id='sales_order_view_tabs_order_invoices_content']/div/div[3]/table/tbody/tr/td[9]/a" to appear
     And I click on the element with xpath "//*[@id='sales_order_view_tabs_order_invoices_content']/div/div[3]/table/tbody/tr/td[9]/a"
 
-    And I wait for element with xpath "//*[@id='history_comment']" to appear
+    And I wait for element with xpath "//textarea[@name='comment[comment]']" to appear
     And I fill in the following:
-      | comment[comment]                  | Very important. Thank you. |
+      | comment[comment]  | Customer requested billing info change. Result: Updated. |
     And I check "comment[is_customer_notified]"
 
-    And I wait for element with xpath "//*[@id='submit_comment_button']/span" to appear
-    And I click on the element with xpath "//*[@id='submit_comment_button']/span"
+    And I click on the element with xpath "//button[@id='submit_comment_button']/span"
 
-    And I wait for element with xpath "//*[@id='comments_block']/ul/li[1]/div" to appear
+    #Assertion
+    And I wait for element with xpath "//div[@class='note-list-comment'][contains(text(),'Customer requested billing info change. Result: Updated.')]" to appear

@@ -133,6 +133,7 @@ class FeatureContext extends MinkContext
      */
     public function iClickOnTheElementWithXpathId($selector)
     {
+        $this->waitForElementToAppear('xpath', $selector);
         $this->getSession()->getPage()->find('xpath', $selector)->click();
     }
 
@@ -147,6 +148,23 @@ class FeatureContext extends MinkContext
         $this->getSession()->getPage()->find('css', $selector)->click();
     }
 
+
+    /**
+     * @When /^I hover over element "([^"]*)"$/
+     */
+    public function iHoverOverTheElement($locator)
+    {
+        $session = $this->getSession(); // get the mink session
+        $element = $session->getPage()->find('xpath', $locator); // runs the actual query and returns the element
+
+        // errors must not pass silently
+        if (null === $element) {
+            throw new \Exception(sprintf('Could not evaluate XPath selector: "%s"', $locator));
+        }
+
+        // ok, let's hover it
+        $element->mouseOver();
+    }
 
     /************* protected ************/
 
@@ -252,7 +270,6 @@ JS;
     {
         $this->getSession()->switchToIFrame();
     }
-
 
     /**
      * @When I scroll :elementId into view
