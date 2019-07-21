@@ -5,25 +5,25 @@ Feature: Customer accounts functionality
 
     Given I am on "/"
 
-    Then I wait for element with xpath "//div[1]/div/ul/li[3]/a" to appear
-    And I click on the element with xpath "//div[1]/div/ul/li[3]/a"
+    Then I wait for element with xpath "//div[@class='panel header']//a[contains(text(),'Create an Account')]" to appear
+    And I click on the element with xpath "//div[@class='panel header']//a[contains(text(),'Create an Account')]"
 
 
     Then I wait for page to load "/index.php/customer/account/create/"
 
     #Personal information
-    And I wait for element with xpath "//*[@id='firstname']" to appear
+    And I wait for element with xpath "//input[@id='firstname']" to appear
     And I fill in the following:
       | firstname          | Anne           |
       | lastname           | Liz            |
     And I check "is_subscribed"
     And I fill in the following:
       | email                  | newtest@gmail.com |
-      | password               | Anne1234         |
-      | password_confirmation  | Anne1234         |
+      | password               | Anne1234$         |
+      | password_confirmation  | Anne1234$         |
 
-    And I wait for element with xpath "//*[@id='form-validate']/div/div[1]/button/span" to appear
-    And I click on the element with xpath "//*[@id='form-validate']/div/div[1]/button/span"
+    And I wait for element with xpath "//form[@class='form create account form-create-account']//span[contains(text(),'Create an Account')]" to appear
+    And I click on the element with xpath "//form[@class='form create account form-create-account']//span[contains(text(),'Create an Account')]"
 
     #Success
     Then I wait for page to load "/index.php/customer/account/"

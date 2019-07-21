@@ -133,6 +133,7 @@ class FeatureContext extends MinkContext
      */
     public function iClickOnTheElementWithXpathId($selector)
     {
+        $this->waitForElementToAppear('xpath', $selector);
         $this->getSession()->getPage()->find('xpath', $selector)->click();
     }
 
