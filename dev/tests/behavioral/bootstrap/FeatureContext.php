@@ -159,7 +159,7 @@ class FeatureContext extends MinkContext
 
         // errors must not pass silently
         if (null === $element) {
-            throw new \InvalidArgumentException(sprintf('Could not evaluate CSS selector: "%s"', $locator));
+            throw new \Exception(sprintf('Could not evaluate XPath selector: "%s"', $locator));
         }
 
         // ok, let's hover it
