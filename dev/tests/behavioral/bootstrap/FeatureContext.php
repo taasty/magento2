@@ -148,6 +148,23 @@ class FeatureContext extends MinkContext
     }
 
 
+    /**
+     * @When /^I hover over element "([^"]*)"$/
+     */
+    public function iHoverOverTheElement($locator)
+    {
+        $session = $this->getSession(); // get the mink session
+        $element = $session->getPage()->find('xpath', $locator); // runs the actual query and returns the element
+
+        // errors must not pass silently
+        if (null === $element) {
+            throw new \InvalidArgumentException(sprintf('Could not evaluate CSS selector: "%s"', $locator));
+        }
+
+        // ok, let's hover it
+        $element->mouseOver();
+    }
+
     /************* protected ************/
 
     protected function waitForElementToAppear($method, $selector){
@@ -252,7 +269,6 @@ JS;
     {
         $this->getSession()->switchToIFrame();
     }
-
 
     /**
      * @When I scroll :elementId into view
