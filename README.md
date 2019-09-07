@@ -1,7 +1,7 @@
 <h2>TaaSty's Demo Repository</h2>
 
 This is a demo repository. Its sole purpose is to demonstrate the TaaSty's
-functionality (*T*esting *A*s *A* *S*ervice).
+functionality (**T**esting **A**s **A** **S**ervice).
 
 1. Make a demo request at [taasty.net](https://taasty.net/#request-demo). You'll get an
 invitation to collaborate on this repository along with the demo account
