@@ -20,8 +20,20 @@ Magento2 publick repository from which this one was clonned is located at
 [magento/magento2](https://github.com/magento/magento2).
 
 ## Screenshots
+
+#### TaaSty's dashboard
 ![Dashboard](pub/media/etc/taasty-dashboard.png "Dashboard view")
--
+
+---
+#### Log view
 ![Log](pub/media/etc/taasty-log.png "Log view")
--
+
+---
+#### Steps along with the video clip
 ![Log + video](pub/media/etc/taasty-video.png "Log with the video clip")
+
+---
+#### Test results posted to PR on GitHub
+![Log + video](pub/media/etc/github-comment-pass.png "Log with the video clip")
+-
+![Log + video](pub/media/etc/github-comment-failure.png "Log with the video clip")
