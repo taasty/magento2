@@ -16,7 +16,7 @@ accompanied by a recorded video. Alternatively you can just visit
 
 
 Please note that this is not the original Magento 2 repository. The original
-Magento2 publick repository from which this one was clonned is located at
+Magento2 public repository from which this one was clonned is located at
 [magento/magento2](https://github.com/magento/magento2).
 
 ## Screenshots
