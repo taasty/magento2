@@ -1,4 +1,4 @@
-<h2>TaaSty's Demo Repository</h2>
+#TaaSty's Demo Repository
 
 This is a demo repository. Its sole purpose is to demonstrate the TaaSty's
 functionality (**T**esting **A**s **A** **S**ervice).
@@ -18,3 +18,10 @@ accompanied by a recorded video. Alternatively you can just visit
 Please note that this is not the original Magento 2 repository. The original
 Magento2 publick repository from which this one was clonned is located at
 [magento/magento2](https://github.com/magento/magento2).
+
+##Screenshots
+![Dashboard](pub/media/etc/taasty-dashboard.png "Dashboard view")
+-
+![Log](pub/media/etc/taasty-log.png "Log view")
+-
+![Log + video](pub/media/etc/taasty-video.png "Log with the video clip")
