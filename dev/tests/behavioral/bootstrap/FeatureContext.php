@@ -28,12 +28,9 @@ use PhpImap\IncomingMailAttachment;
  */
 class FeatureContext extends MinkContext
 {
-    const TIMEOUT_PAGE_LOAD         = 120;
-    const TIMEOUT_ELEMENT_TO_APPEAR = 60;
-
-    // 30 tries 10 seconds each ~ 5 minutes (+ connection and pull time)
-    const MAIL_CHECK_TRIES_NUM      = 30;
-    const MAIL_CHECK_TRY_SLEEP      = 5;
+    const TIMEOUT_PAGE_LOAD                   = 120;
+    const TIMEOUT_ELEMENT_TO_APPEAR           = 60;
+    const TIMEOUT_ELEMENT_TO_BECOME_CLICKABLE = 60;
 
     /**
      * Initializes context.
@@ -65,27 +62,36 @@ class FeatureContext extends MinkContext
         );
     }
 
-	/** Click on the element with the provided xpath query
-	 *
-	 * @When /^I click on the element with xpath "([^"]*)"$/
-	 */
-	public function iClickOnTheElementWithXPath($xpath)
-	{
-	    $session = $this->getSession(); // get the mink session
-	    $element = $session->getPage()->find(
-		'xpath',
-		$session->getSelectorsHandler()->selectorToXpath('xpath', $xpath)
-	    ); // runs the actual query and returns the element
+    /** Click on the element with the provided xpath query
+     *
+     * @When /^I click on the element with xpath "([^"]*)"$/
+     */
+    public function iClickOnTheElementWithXPath($xpath)
+    {
+        $session = $this->getSession(); // get the mink session
+        $element = $session->getPage()->find(
+            'xpath',
+            $session->getSelectorsHandler()->selectorToXpath('xpath', $xpath)
+        ); // runs the actual query and returns the element
 
-	    // errors must not pass silently
-	    if (null === $element) {
-		throw new \InvalidArgumentException(sprintf('Could not evaluate XPath: "%s"', $xpath));
-	    }
+        if (null === $element) {
+            throw new \InvalidArgumentException(sprintf('Could not evaluate XPath: "%s"', $xpath));
+        }
 
-	    // ok, let's click on it
-	    $element->click();
+        $timeOut = self::TIMEOUT_ELEMENT_TO_BECOME_CLICKABLE;
+        $timeEnd = time() + $timeOut;
+        while (time() <= $timeEnd){
+            try{
+                $element->click();
 
-	}
+                return true;
+            } catch(Exception $e){
+                usleep(100);
+            }
+        }
+
+        throw $e;
+    }
 
     /** Wait for page to load
      *
