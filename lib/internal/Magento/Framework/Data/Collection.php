@@ -14,6 +14,7 @@ use Magento\Framework\Option\ArrayInterface;
  * TODO: Refactor use of \Magento\Framework\Option\ArrayInterface in library.
  *
  * @api
+ * @since 100.0.2
  */
 class Collection implements \IteratorAggregate, \Countable, ArrayInterface, CollectionDataSourceInterface
 {
@@ -492,7 +493,7 @@ class Collection implements \IteratorAggregate, \Countable, ArrayInterface, Coll
      *
      * Returns array with results of callback for each item
      *
-     * @param string $callback
+     * @param callable $callback
      * @param array $args
      * @return array
      */
@@ -851,7 +852,7 @@ class Collection implements \IteratorAggregate, \Countable, ArrayInterface, Coll
      */
     public function getFlag($flag)
     {
-        return isset($this->_flags[$flag]) ? $this->_flags[$flag] : null;
+        return $this->_flags[$flag] ?? null;
     }
 
     /**

@@ -6,6 +6,7 @@
 namespace Magento\Catalog\Model;
 
 use Magento\Catalog\Api\CategoryRepositoryInterface;
+use Magento\Catalog\Api\Data\CategoryInterface;
 use Magento\CatalogUrlRewrite\Model\CategoryUrlRewriteGenerator;
 use Magento\Framework\Api\AttributeValueFactory;
 use Magento\Framework\Convert\ConvertArray;
@@ -28,6 +29,8 @@ use Magento\UrlRewrite\Service\V1\Data\UrlRewrite;
  * @method Category setUrlPath(string $urlPath)
  * @method Category getSkipDeleteChildren()
  * @method Category setSkipDeleteChildren(boolean $value)
+ * @method Category setChangedProductIds(array $categoryIds) Set products ids that inserted or deleted for category
+ * @method array getChangedProductIds() Get products ids that inserted or deleted for category
  *
  * @SuppressWarnings(PHPMD.LongVariable)
  * @SuppressWarnings(PHPMD.ExcessivePublicCount)
@@ -69,23 +72,6 @@ class Category extends \Magento\Catalog\Model\AbstractModel implements
 
     const CACHE_TAG = 'cat_c';
 
-    /**#@+
-     * Constants
-     */
-    const KEY_PARENT_ID = 'parent_id';
-    const KEY_NAME = 'name';
-    const KEY_IS_ACTIVE = 'is_active';
-    const KEY_POSITION = 'position';
-    const KEY_LEVEL = 'level';
-    const KEY_UPDATED_AT = 'updated_at';
-    const KEY_CREATED_AT = 'created_at';
-    const KEY_PATH = 'path';
-    const KEY_AVAILABLE_SORT_BY = 'available_sort_by';
-    const KEY_INCLUDE_IN_MENU = 'include_in_menu';
-    const KEY_PRODUCT_COUNT = 'product_count';
-    const KEY_CHILDREN_DATA = 'children_data';
-    /**#@-*/
-
     /**#@-*/
     protected $_eventPrefix = 'catalog_category';
 
@@ -111,10 +97,16 @@ class Category extends \Magento\Catalog\Model\AbstractModel implements
     protected $_url;
 
     /**
+     * @var ResourceModel\Category
+     * @since 102.0.6
+     */
+    protected $_resource;
+
+    /**
      * URL rewrite model
      *
      * @var \Magento\UrlRewrite\Model\UrlRewrite
-     * @deprecated 101.1.0
+     * @deprecated 102.0.0
      */
     protected $_urlRewrite;
 
@@ -142,21 +134,11 @@ class Category extends \Magento\Catalog\Model\AbstractModel implements
     /**
      * Attributes are that part of interface
      *
+     * @deprecated
+     * @see CategoryInterface::ATTRIBUTES
      * @var array
      */
-    protected $interfaceAttributes = [
-        'id',
-        self::KEY_PARENT_ID,
-        self::KEY_NAME,
-        self::KEY_IS_ACTIVE,
-        self::KEY_POSITION,
-        self::KEY_LEVEL,
-        self::KEY_UPDATED_AT,
-        self::KEY_CREATED_AT,
-        self::KEY_AVAILABLE_SORT_BY,
-        self::KEY_INCLUDE_IN_MENU,
-        self::KEY_CHILDREN_DATA,
-    ];
+    protected $interfaceAttributes = CategoryInterface::ATTRIBUTES;
 
     /**
      * Category tree model
@@ -325,9 +307,20 @@ class Category extends \Magento\Catalog\Model\AbstractModel implements
     {
         if ($this->customAttributesCodes === null) {
             $this->customAttributesCodes = $this->getEavAttributesCodes($this->metadataService);
-            $this->customAttributesCodes = array_diff($this->customAttributesCodes, $this->interfaceAttributes);
+            $this->customAttributesCodes = array_diff($this->customAttributesCodes, CategoryInterface::ATTRIBUTES);
         }
         return $this->customAttributesCodes;
+    }
+
+    /**
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @return \Magento\Catalog\Model\ResourceModel\Category
+     * @deprecated 102.0.6 because resource models should be used directly
+     * @since 102.0.6
+     */
+    protected function _getResource()
+    {
+        return parent::_getResource();
     }
 
     /**
@@ -667,9 +660,22 @@ class Category extends \Magento\Catalog\Model\AbstractModel implements
         $image = $this->getData($attributeCode);
         if ($image) {
             if (is_string($image)) {
-                $url = $this->_storeManager->getStore()->getBaseUrl(
+                $store = $this->_storeManager->getStore();
+
+                $isRelativeUrl = substr($image, 0, 1) === '/';
+
+                $mediaBaseUrl = $store->getBaseUrl(
                     \Magento\Framework\UrlInterface::URL_TYPE_MEDIA
-                ) . 'catalog/category/' . $image;
+                );
+
+                if ($isRelativeUrl) {
+                    $url = $image;
+                } else {
+                    $url = $mediaBaseUrl
+                        . ltrim(\Magento\Catalog\Model\Category\FileInfo::ENTITY_MEDIA_PATH, '/')
+                        . '/'
+                        . $image;
+                }
             } else {
                 throw new \Magento\Framework\Exception\LocalizedException(
                     __('Something went wrong while getting the image url.')
@@ -780,11 +786,14 @@ class Category extends \Magento\Catalog\Model\AbstractModel implements
     /**
      * Retrieve children ids comma separated
      *
+     * @param boolean $recursive
+     * @param boolean $isActive
+     * @param boolean $sortByPosition
      * @return string
      */
-    public function getChildren()
+    public function getChildren($recursive = false, $isActive = true, $sortByPosition = false)
     {
-        return implode(',', $this->getResource()->getChildren($this, false));
+        return implode(',', $this->getResource()->getChildren($this, $recursive, $isActive, $sortByPosition));
     }
 
     /**
@@ -938,8 +947,11 @@ class Category extends \Magento\Catalog\Model\AbstractModel implements
      */
     public function getProductCount()
     {
-        $count = $this->_getResource()->getProductCount($this);
-        $this->setData(self::KEY_PRODUCT_COUNT, $count);
+        if (!$this->hasData(self::KEY_PRODUCT_COUNT)) {
+            $count = $this->_getResource()->getProductCount($this);
+            $this->setData(self::KEY_PRODUCT_COUNT, $count);
+        }
+
         return $this->getData(self::KEY_PRODUCT_COUNT);
     }
 
@@ -1094,7 +1106,11 @@ class Category extends \Magento\Catalog\Model\AbstractModel implements
         if ($this->flatState->isFlatEnabled()) {
             $flatIndexer = $this->indexerRegistry->get(Indexer\Category\Flat\State::INDEXER_ID);
             if (!$flatIndexer->isScheduled()) {
-                $flatIndexer->reindexRow($this->getId());
+                $idsList = [$this->getId()];
+                if ($this->dataHasChangedFor('url_key')) {
+                    $idsList = array_merge($idsList, explode(',', $this->getAllChildren()));
+                }
+                $flatIndexer->reindexList($idsList);
             }
         }
         $productIndexer = $this->indexerRegistry->get(Indexer\Category\Product::INDEXER_ID);

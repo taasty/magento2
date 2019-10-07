@@ -45,7 +45,7 @@ class Categories extends AbstractModifier
 
     /**
      * @var array
-     * @deprecated 101.0.3
+     * @deprecated 101.0.0
      * @since 101.0.0
      */
     protected $categoriesTrees = [];
@@ -228,6 +228,7 @@ class Categories extends AbstractModifier
                             'componentType' => 'container',
                             'component' => 'Magento_Ui/js/form/components/group',
                             'scopeLabel' => __('[GLOBAL]'),
+                            'disabled' => $this->locator->getProduct()->isLockedAttribute($fieldCode),
                         ],
                     ],
                 ],

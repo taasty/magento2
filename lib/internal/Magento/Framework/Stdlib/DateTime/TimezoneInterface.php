@@ -9,6 +9,7 @@ namespace Magento\Framework\Stdlib\DateTime;
 /**
  * Timezone Interface
  * @api
+ * @since 100.0.2
  */
 interface TimezoneInterface
 {
@@ -124,8 +125,8 @@ interface TimezoneInterface
      * @param string|\DateTimeInterface $date
      * @param int $dateType
      * @param int $timeType
-     * @param null $locale
-     * @param null $timezone
+     * @param string|null $locale
+     * @param string|null $timezone
      * @param string|null $pattern
      * @return string
      */

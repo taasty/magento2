@@ -23,6 +23,7 @@ use Magento\Framework\Data\Collection;
  * At least one target directory must be set
  *
  * @api
+ * @since 100.0.2
  */
 class Filesystem extends \Magento\Framework\Data\Collection
 {
@@ -243,7 +244,7 @@ class Filesystem extends \Magento\Framework\Data\Collection
             $dir = [$dir];
         }
         foreach ($dir as $folder) {
-            if ($nodes = glob($folder . '/*')) {
+            if ($nodes = glob($folder . '/*', GLOB_NOSORT)) {
                 foreach ($nodes as $node) {
                     $collectedResult[] = $node;
                 }

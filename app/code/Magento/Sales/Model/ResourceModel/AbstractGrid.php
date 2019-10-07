@@ -48,7 +48,6 @@ abstract class AbstractGrid extends AbstractDb implements GridInterface
     /**
      * Returns connection
      *
-     * @todo: make method protected
      * @return AdapterInterface
      */
     public function getConnection()
@@ -91,7 +90,7 @@ abstract class AbstractGrid extends AbstractDb implements GridInterface
      *
      * @param string $default
      * @return string
-     * @deprecated 100.2.0 this method is not used in abstract model but only in single child so
+     * @deprecated 101.0.0 this method is not used in abstract model but only in single child so
      * this deprecation is a part of cleaning abstract classes.
      * @see \Magento\Sales\Model\ResourceModel\Provider\UpdatedIdListProvider
      */

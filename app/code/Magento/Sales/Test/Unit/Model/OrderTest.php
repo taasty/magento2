@@ -17,6 +17,8 @@ use Magento\Sales\Model\ResourceModel\Order\Status\History\CollectionFactory as 
  * Test class for \Magento\Sales\Model\Order
  *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @SuppressWarnings(PHPMD.TooManyPublicMethods)
+ * @SuppressWarnings(PHPMD.ExcessivePublicCount)
  */
 class OrderTest extends \PHPUnit\Framework\TestCase
 {
@@ -114,7 +116,7 @@ class OrderTest extends \PHPUnit\Framework\TestCase
                 'getParentItemId',
                 'getQuoteItemId',
                 'getLockedDoInvoice',
-                'getProductId'
+                'getProductId',
             ]);
         $this->salesOrderCollectionMock = $this->getMockBuilder(
             \Magento\Sales\Model\ResourceModel\Order\Collection::class
@@ -845,6 +847,9 @@ class OrderTest extends \PHPUnit\Framework\TestCase
             ->will($this->returnValue($itemCollectionMock));
     }
 
+    /**
+     * @return array
+     */
     public function canVoidPaymentDataProvider()
     {
         $data = [];
@@ -856,6 +861,9 @@ class OrderTest extends \PHPUnit\Framework\TestCase
         return $data;
     }
 
+    /**
+     * @return array
+     */
     public function dataProviderActionFlag()
     {
         return [

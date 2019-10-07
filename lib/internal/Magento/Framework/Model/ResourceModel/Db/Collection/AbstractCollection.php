@@ -14,6 +14,7 @@ use \Magento\Framework\Data\Collection\AbstractDb;
  *
  * @api
  * @SuppressWarnings(PHPMD.NumberOfChildren)
+ * @since 100.0.2
  */
 abstract class AbstractCollection extends AbstractDb implements SourceProviderInterface
 {
@@ -496,9 +497,9 @@ abstract class AbstractCollection extends AbstractDb implements SourceProviderIn
     /**
      * Join table to collection select
      *
-     * @param string $table
+     * @param string|array $table
      * @param string $cond
-     * @param string $cols
+     * @param string|array $cols
      * @return $this
      */
     public function join($table, $cond, $cols = '*')

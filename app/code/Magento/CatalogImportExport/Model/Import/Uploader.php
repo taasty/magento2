@@ -101,7 +101,7 @@ class Uploader extends \Magento\MediaStorage\Model\File\Uploader
      * @param \Magento\MediaStorage\Model\File\Validator\NotProtectedExtension $validator
      * @param \Magento\Framework\Filesystem $filesystem
      * @param \Magento\Framework\Filesystem\File\ReadFactory $readFactory
-     * @param null $filePath
+     * @param string|null $filePath
      * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function __construct(
@@ -146,32 +146,53 @@ class Uploader extends \Magento\MediaStorage\Model\File\Uploader
      * @param string $fileName
      * @param bool $renameFileOff
      * @return array
+     *
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function move($fileName, $renameFileOff = false)
     {
         if ($renameFileOff) {
             $this->setAllowRenameFiles(false);
         }
+
+        if ($this->getTmpDir()) {
+            $filePath = $this->getTmpDir() . '/';
+        } else {
+            $filePath = '';
+        }
+
         if (preg_match('/\bhttps?:\/\//i', $fileName, $matches)) {
             $url = str_replace($matches[0], '', $fileName);
+            $driver = $matches[0] === $this->httpScheme ? DriverPool::HTTP : DriverPool::HTTPS;
+            $read = $this->_readFactory->create($url, $driver);
 
-            if ($matches[0] === $this->httpScheme) {
-                $read = $this->_readFactory->create($url, DriverPool::HTTP);
-            } else {
-                $read = $this->_readFactory->create($url, DriverPool::HTTPS);
+            //only use filename (for URI with query parameters)
+            $parsedUrlPath = parse_url($url, PHP_URL_PATH);
+            if ($parsedUrlPath) {
+                $urlPathValues = explode('/', $parsedUrlPath);
+                if (!empty($urlPathValues)) {
+                    $fileName = end($urlPathValues);
+                }
+            }
+
+            $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION);
+            if ($fileExtension && !$this->checkAllowedExtension($fileExtension)) {
+                throw new \Magento\Framework\Exception\LocalizedException(__('Disallowed file type.'));
             }
 
             $fileName = preg_replace('/[^a-z0-9\._-]+/i', '', $fileName);
+            $filePath = $this->_directory->getRelativePath($filePath . $fileName);
             $this->_directory->writeFile(
-                $this->_directory->getRelativePath($this->getTmpDir() . '/' . $fileName),
+                $filePath,
                 $read->readAll()
             );
         }
 
-        $filePath = $this->_directory->getRelativePath($this->getTmpDir() . '/' . $fileName);
+        $filePath = $this->_directory->getRelativePath($filePath . $fileName);
         $this->_setUploadFile($filePath);
         $destDir = $this->_directory->getAbsolutePath($this->getDestDir());
         $result = $this->save($destDir);
+        unset($result['path']);
         $result['name'] = self::getCorrectFileName($result['name']);
         return $result;
     }
@@ -231,6 +252,7 @@ class Uploader extends \Magento\MediaStorage\Model\File\Uploader
 
         $fileExtension = pathinfo($filePath, PATHINFO_EXTENSION);
         if (!$this->checkAllowedExtension($fileExtension)) {
+            $this->_directory->delete($filePath);
             throw new \Exception('Disallowed file type.');
         }
         //run validate callbacks
@@ -331,7 +353,7 @@ class Uploader extends \Magento\MediaStorage\Model\File\Uploader
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     protected function chmod($file)
     {

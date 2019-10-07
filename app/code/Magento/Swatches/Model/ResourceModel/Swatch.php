@@ -37,4 +37,25 @@ class Swatch extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
             $this->getConnection()->update($this->getTable('eav_attribute'), $bind, $where);
         }
     }
+
+    /**
+     * Cleaned swatch option values when switching to dropdown input type.
+     *
+     * @param array $optionIDs
+     * @param int $type
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @since 100.2.4
+     */
+    public function clearSwatchOptionByOptionIdAndType($optionIDs, $type = null)
+    {
+        if (count($optionIDs)) {
+            foreach ($optionIDs as $optionId) {
+                $where = ['option_id' => $optionId];
+                if ($type !== null) {
+                    $where['type = ?'] = $type;
+                }
+                $this->getConnection()->delete($this->getMainTable(), $where);
+            }
+        }
+    }
 }
