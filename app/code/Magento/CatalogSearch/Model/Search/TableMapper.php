@@ -25,6 +25,8 @@ use Magento\Store\Model\StoreManagerInterface;
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  * @api
  * @since 100.0.2
+ * @deprecated 101.0.0
+ * @see \Magento\ElasticSearch
  */
 class TableMapper
 {

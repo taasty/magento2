@@ -3,6 +3,7 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Eav\Model\ResourceModel\Entity;
 
 use Magento\Eav\Model\Config;
@@ -10,7 +11,9 @@ use Magento\Eav\Model\Entity\Attribute\AbstractAttribute;
 use Magento\Eav\Model\Entity\Attribute as EntityAttribute;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\DB\Select;
+use Magento\Framework\Exception\CouldNotDeleteException;
 use Magento\Framework\Model\AbstractModel;
+use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 
 /**
  * EAV attribute resource model
@@ -19,7 +22,7 @@ use Magento\Framework\Model\AbstractModel;
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  * @since 100.0.2
  */
-class Attribute extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
+class Attribute extends AbstractDb
 {
     /**
      * Eav Entity attributes cache
@@ -118,7 +121,7 @@ class Attribute extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      */
     private function _getMaxSortOrder(AbstractModel $object)
     {
-        if (intval($object->getAttributeGroupId()) > 0) {
+        if ((int)$object->getAttributeGroupId() > 0) {
             $connection = $this->getConnection();
             $bind = [
                 ':attribute_set_id' => $object->getAttributeSetId(),
@@ -170,10 +173,10 @@ class Attribute extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     {
         $frontendLabel = $object->getFrontendLabel();
         if (is_array($frontendLabel)) {
-            if (!isset($frontendLabel[0]) || $frontendLabel[0] === null || $frontendLabel[0] == '') {
-                throw new \Magento\Framework\Exception\LocalizedException(__('The storefront label is not defined.'));
-            }
+            $this->checkDefaultFrontendLabelExists($frontendLabel, $frontendLabel);
             $object->setFrontendLabel($frontendLabel[0])->setStoreLabels($frontendLabel);
+        } else {
+            $this->setStoreLabels($object, $frontendLabel);
         }
 
         /**
@@ -186,6 +189,24 @@ class Attribute extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
         }
 
         return parent::_beforeSave($object);
+    }
+
+    /**
+     * @inheritdoc
+     *
+     * @param AbstractModel $attribute
+     * @return AbstractDb
+     * @throws CouldNotDeleteException
+     * @since 102.0.3
+     */
+    protected function _beforeDelete(AbstractModel $attribute)
+    {
+        /** @var $attribute \Magento\Eav\Api\Data\AttributeInterface */
+        if ($attribute->getId() && !$attribute->getIsUserDefined()) {
+            throw new CouldNotDeleteException(__("The system attribute can't be deleted."));
+        }
+
+        return parent::_beforeDelete($attribute);
     }
 
     /**
@@ -224,6 +245,8 @@ class Attribute extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     }
 
     /**
+     * Returns config instance
+     *
      * @return Config
      * @deprecated 100.0.7
      */
@@ -296,10 +319,10 @@ class Attribute extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      * Save in set including
      *
      * @param AbstractModel $object
-     * @param null $attributeEntityId
-     * @param null $attributeSetId
-     * @param null $attributeGroupId
-     * @param null $attributeSortOrder
+     * @param int|null $attributeEntityId
+     * @param int|null $attributeSetId
+     * @param int|null $attributeGroupId
+     * @param int|null $attributeSortOrder
      * @return $this
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */
@@ -393,7 +416,9 @@ class Attribute extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     protected function _checkDefaultOptionValue($values)
     {
         if (!isset($values[0])) {
-            throw new \Magento\Framework\Exception\LocalizedException(__('Default option value is not defined'));
+            throw new \Magento\Framework\Exception\LocalizedException(
+                __("The default option isn't defined. Set the option and try again.")
+            );
         }
     }
 
@@ -633,6 +658,7 @@ class Attribute extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 
     /**
      * Load additional attribute data.
+     *
      * Load label of current active store
      *
      * @param EntityAttribute|AbstractModel $object
@@ -738,5 +764,44 @@ class Attribute extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
         parent::__wakeup();
         $this->_storeManager = \Magento\Framework\App\ObjectManager::getInstance()
             ->get(\Magento\Store\Model\StoreManagerInterface::class);
+    }
+
+    /**
+     * This method extracts frontend labels into array and sets array values as storeLabels into an object.
+     *
+     * @param AbstractModel $object
+     * @param string|null $frontendLabel
+     * @return void
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    private function setStoreLabels(AbstractModel $object, $frontendLabel)
+    {
+        $resultLabel = [];
+        $frontendLabels = $object->getFrontendLabels();
+        if (isset($frontendLabels[0])
+            && $frontendLabels[0] instanceof \Magento\Eav\Model\Entity\Attribute\FrontendLabel
+        ) {
+            foreach ($frontendLabels as $label) {
+                $resultLabel[$label->getStoreId()] = $label->getLabel();
+            }
+            $this->checkDefaultFrontendLabelExists($frontendLabel, $resultLabel);
+            $object->setStoreLabels($resultLabel);
+        }
+    }
+
+    /**
+     * This method checks whether value for default frontend label exists in attribute data.
+     *
+     * @param array|string|null $frontendLabel
+     * @param array $resultLabels
+     * @return void
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    private function checkDefaultFrontendLabelExists($frontendLabel, $resultLabels)
+    {
+        $isAdminStoreLabel = (isset($resultLabels[0]) && !empty($resultLabels[0]));
+        if (empty($frontendLabel) && !$isAdminStoreLabel) {
+            throw new \Magento\Framework\Exception\LocalizedException(__('The storefront label is not defined.'));
+        }
     }
 }

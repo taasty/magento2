@@ -1,14 +1,18 @@
 <?php
 /**
- *
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
 namespace Magento\Catalog\Controller\Adminhtml\Product\Gallery;
 
+use Magento\Framework\App\Action\HttpPostActionInterface as HttpPostActionInterface;
 use Magento\Framework\App\Filesystem\DirectoryList;
+use Magento\Framework\Exception\LocalizedException;
 
-class Upload extends \Magento\Backend\App\Action
+/**
+ * Class Upload
+ */
+class Upload extends \Magento\Backend\App\Action implements HttpPostActionInterface
 {
     /**
      * Authorization level of a basic admin session
@@ -23,6 +27,16 @@ class Upload extends \Magento\Backend\App\Action
     protected $resultRawFactory;
 
     /**
+     * @var array
+     */
+    private $allowedMimeTypes = [
+        'jpg' => 'image/jpg',
+        'jpeg' => 'image/jpeg',
+        'gif' => 'image/png',
+        'png' => 'image/gif'
+    ];
+
+    /**
      * @param \Magento\Backend\App\Action\Context $context
      * @param \Magento\Framework\Controller\Result\RawFactory $resultRawFactory
      */
@@ -35,6 +49,8 @@ class Upload extends \Magento\Backend\App\Action
     }
 
     /**
+     * Upload image(s) to the product gallery.
+     *
      * @return \Magento\Framework\Controller\Result\Raw
      */
     public function execute()
@@ -44,7 +60,12 @@ class Upload extends \Magento\Backend\App\Action
                 \Magento\MediaStorage\Model\File\Uploader::class,
                 ['fileId' => 'image']
             );
-            $uploader->setAllowedExtensions(['jpg', 'jpeg', 'gif', 'png']);
+            $uploader->setAllowedExtensions($this->getAllowedExtensions());
+
+            if (!$uploader->checkMimeType($this->getAllowedMimeTypes())) {
+                throw new LocalizedException(__('Disallowed File Type.'));
+            }
+
             /** @var \Magento\Framework\Image\Adapter\AdapterInterface $imageAdapter */
             $imageAdapter = $this->_objectManager->get(\Magento\Framework\Image\AdapterFactory::class)->create();
             $uploader->addValidateCallback('catalog_product_image', $imageAdapter, 'validateUploadFile');
@@ -76,5 +97,25 @@ class Upload extends \Magento\Backend\App\Action
         $response->setHeader('Content-type', 'text/plain');
         $response->setContents(json_encode($result));
         return $response;
+    }
+
+    /**
+     * Get the set of allowed file extensions.
+     *
+     * @return array
+     */
+    private function getAllowedExtensions()
+    {
+        return array_keys($this->allowedMimeTypes);
+    }
+
+    /**
+     * Get the set of allowed mime types.
+     *
+     * @return array
+     */
+    private function getAllowedMimeTypes()
+    {
+        return array_values($this->allowedMimeTypes);
     }
 }
