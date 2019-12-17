@@ -7,6 +7,7 @@ namespace Magento\Eav\Model\Entity;
 
 use Magento\Framework\Api\AttributeValueFactory;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Stdlib\DateTime;
 use Magento\Framework\Stdlib\DateTime\DateTimeFormatterInterface;
 
 /**
@@ -14,7 +15,6 @@ use Magento\Framework\Stdlib\DateTime\DateTimeFormatterInterface;
  *
  * @api
  * @method \Magento\Eav\Model\Entity\Attribute setOption($value)
- * @method \Magento\Eav\Api\Data\AttributeExtensionInterface getExtensionAttributes()
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  * @since 100.0.2
  */
@@ -28,6 +28,11 @@ class Attribute extends \Magento\Eav\Model\Entity\Attribute\AbstractAttribute im
      * MySQL allows only 64 symbols in column name.
      */
     const ATTRIBUTE_CODE_MAX_LENGTH = 60;
+
+    /**
+     * Attribute code min length.
+     */
+    const ATTRIBUTE_CODE_MIN_LENGTH = 1;
 
     /**
      * Cache tag
@@ -247,7 +252,10 @@ class Attribute extends \Magento\Eav\Model\Entity\Attribute\AbstractAttribute im
         )
         ) {
             throw new LocalizedException(
-                __('An attribute code must not be more than %1 characters.', self::ATTRIBUTE_CODE_MAX_LENGTH)
+                __(
+                    'The attribute code needs to be %1 characters or fewer. Re-enter the code and try again.',
+                    self::ATTRIBUTE_CODE_MAX_LENGTH
+                )
             );
         }
 
@@ -258,7 +266,9 @@ class Attribute extends \Magento\Eav\Model\Entity\Attribute\AbstractAttribute im
             $numberFormatter = new \NumberFormatter($this->_localeResolver->getLocale(), \NumberFormatter::DECIMAL);
             $defaultValue = $numberFormatter->parse($defaultValue);
             if ($defaultValue === false) {
-                throw new LocalizedException(__('Invalid default decimal value'));
+                throw new LocalizedException(
+                    __('The default decimal value is invalid. Verify the value and try again.')
+                );
             }
             $this->setDefaultValue($defaultValue);
         }
@@ -274,15 +284,19 @@ class Attribute extends \Magento\Eav\Model\Entity\Attribute\AbstractAttribute im
 
             // save default date value as timestamp
             if ($hasDefaultValue) {
-                $format = $this->_localeDate->getDateFormat(
-                    \IntlDateFormatter::SHORT
-                );
                 try {
-                    $defaultValue = $this->dateTimeFormatter->formatObject(new \DateTime($defaultValue), $format);
-                    $this->setDefaultValue($defaultValue);
+                    $locale = $this->_localeResolver->getLocale();
+                    $defaultValue = $this->_localeDate->date($defaultValue, $locale, false, false);
+                    $this->setDefaultValue($defaultValue->format(DateTime::DATETIME_PHP_FORMAT));
                 } catch (\Exception $e) {
-                    throw new LocalizedException(__('Invalid default date'));
+                    throw new LocalizedException(__('The default date is invalid. Verify the date and try again.'));
                 }
+            }
+        }
+
+        if ($this->getFrontendInput() == 'media_image') {
+            if (!$this->getFrontendModel()) {
+                $this->setFrontendModel(\Magento\Catalog\Model\Product\Attribute\Frontend\Image::class);
             }
         }
 
@@ -307,7 +321,7 @@ class Attribute extends \Magento\Eav\Model\Entity\Attribute\AbstractAttribute im
     }
 
     /**
-     * @return $this
+     * @inheritdoc
      * @since 100.0.7
      */
     public function afterDelete()
@@ -386,6 +400,7 @@ class Attribute extends \Magento\Eav\Model\Entity\Attribute\AbstractAttribute im
                 break;
 
             case 'textarea':
+            case 'texteditor':
                 $field = 'default_value_textarea';
                 break;
 

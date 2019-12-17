@@ -105,9 +105,12 @@ abstract class AbstractOptions extends \Magento\Framework\View\Element\Template
     }
 
     /**
+     * Retrieve formatted price
+     *
      * @return string
+     * @since 102.0.6
      */
-    public function getFormatedPrice()
+    public function getFormattedPrice()
     {
         if ($option = $this->getOption()) {
             return $this->_formatPrice(
@@ -118,6 +121,17 @@ abstract class AbstractOptions extends \Magento\Framework\View\Element\Template
             );
         }
         return '';
+    }
+
+    /**
+     * @return string
+     *
+     * @deprecated 102.0.6
+     * @see getFormattedPrice()
+     */
+    public function getFormatedPrice()
+    {
+        return $this->getFormattedPrice();
     }
 
     /**
@@ -178,7 +192,7 @@ abstract class AbstractOptions extends \Magento\Framework\View\Element\Template
      * Returns price converted to current currency rate
      *
      * @param float $price
-     * @return float
+     * @return float|string
      */
     public function getCurrencyPrice($price)
     {

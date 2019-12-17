@@ -8,7 +8,7 @@ namespace Magento\Framework\Webapi;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\State;
-use Magento\Framework\Exception\AbstractAggregateException;
+use Magento\Framework\Exception\AggregateExceptionInterface;
 use Magento\Framework\Exception\AuthenticationException;
 use Magento\Framework\Exception\AuthorizationException;
 use Magento\Framework\Exception\LocalizedException;
@@ -22,6 +22,7 @@ use Magento\Framework\Webapi\Exception as WebapiException;
  *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  * @api
+ * @since 100.0.2
  */
 class ErrorProcessor
 {
@@ -126,7 +127,7 @@ class ErrorProcessor
                 $httpCode = WebapiException::HTTP_BAD_REQUEST;
             }
 
-            if ($exception instanceof AbstractAggregateException) {
+            if ($exception instanceof AggregateExceptionInterface) {
                 $errors = $exception->getErrors();
             } else {
                 $errors = null;
@@ -195,7 +196,7 @@ class ErrorProcessor
      * Log information about exception to exception log.
      *
      * @param \Exception $exception
-     * @return string $reportId
+     * @return string
      */
     protected function _critical(\Exception $exception)
     {
@@ -317,7 +318,7 @@ class ErrorProcessor
     protected function _saveFatalErrorReport($reportData)
     {
         $this->directoryWrite->create('report/api');
-        $reportId = abs(intval(microtime(true) * rand(100, 1000)));
+        $reportId = abs((int)(microtime(true) * random_int(100, 1000)));
         $this->directoryWrite->writeFile('report/api/' . $reportId, $this->serializer->serialize($reportData));
         return $reportId;
     }

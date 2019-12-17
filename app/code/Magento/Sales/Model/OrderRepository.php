@@ -3,6 +3,7 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Sales\Model;
 
 use Magento\Framework\Api\SearchCriteria\CollectionProcessorInterface;
@@ -16,6 +17,10 @@ use Magento\Sales\Api\Data\ShippingAssignmentInterface;
 use Magento\Sales\Model\Order\ShippingAssignmentBuilder;
 use Magento\Sales\Model\ResourceModel\Metadata;
 use Magento\Framework\App\ObjectManager;
+use Magento\Tax\Api\OrderTaxManagementInterface;
+use Magento\Payment\Api\Data\PaymentAdditionalInfoInterface;
+use Magento\Payment\Api\Data\PaymentAdditionalInfoInterfaceFactory;
+use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 
 /**
  * Repository class
@@ -55,18 +60,39 @@ class OrderRepository implements \Magento\Sales\Api\OrderRepositoryInterface
     protected $registry = [];
 
     /**
+     * @var OrderTaxManagementInterface
+     */
+    private $orderTaxManagement;
+
+    /**
+     * @var PaymentAdditionalInfoFactory
+     */
+    private $paymentAdditionalInfoFactory;
+
+    /**
+     * @var JsonSerializer
+     */
+    private $serializer;
+
+    /**
      * Constructor
      *
      * @param Metadata $metadata
      * @param SearchResultFactory $searchResultFactory
      * @param CollectionProcessorInterface|null $collectionProcessor
      * @param \Magento\Sales\Api\Data\OrderExtensionFactory|null $orderExtensionFactory
+     * @param OrderTaxManagementInterface|null $orderTaxManagement
+     * @param PaymentAdditionalInfoInterfaceFactory|null $paymentAdditionalInfoFactory
+     * @param JsonSerializer|null $serializer
      */
     public function __construct(
         Metadata $metadata,
         SearchResultFactory $searchResultFactory,
         CollectionProcessorInterface $collectionProcessor = null,
-        \Magento\Sales\Api\Data\OrderExtensionFactory $orderExtensionFactory = null
+        \Magento\Sales\Api\Data\OrderExtensionFactory $orderExtensionFactory = null,
+        OrderTaxManagementInterface $orderTaxManagement = null,
+        PaymentAdditionalInfoInterfaceFactory $paymentAdditionalInfoFactory = null,
+        JsonSerializer $serializer = null
     ) {
         $this->metadata = $metadata;
         $this->searchResultFactory = $searchResultFactory;
@@ -74,10 +100,16 @@ class OrderRepository implements \Magento\Sales\Api\OrderRepositoryInterface
             ->get(\Magento\Framework\Api\SearchCriteria\CollectionProcessorInterface::class);
         $this->orderExtensionFactory = $orderExtensionFactory ?: ObjectManager::getInstance()
             ->get(\Magento\Sales\Api\Data\OrderExtensionFactory::class);
+        $this->orderTaxManagement = $orderTaxManagement ?: ObjectManager::getInstance()
+            ->get(OrderTaxManagementInterface::class);
+        $this->paymentAdditionalInfoFactory = $paymentAdditionalInfoFactory ?: ObjectManager::getInstance()
+            ->get(PaymentAdditionalInfoInterfaceFactory::class);
+        $this->serializer = $serializer ?: ObjectManager::getInstance()
+            ->get(JsonSerializer::class);
     }
 
     /**
-     * load entity
+     * Load entity
      *
      * @param int $id
      * @return \Magento\Sales\Api\Data\OrderInterface
@@ -87,18 +119,73 @@ class OrderRepository implements \Magento\Sales\Api\OrderRepositoryInterface
     public function get($id)
     {
         if (!$id) {
-            throw new InputException(__('Id required'));
+            throw new InputException(__('An ID is needed. Set the ID and try again.'));
         }
         if (!isset($this->registry[$id])) {
             /** @var OrderInterface $entity */
             $entity = $this->metadata->getNewInstance()->load($id);
             if (!$entity->getEntityId()) {
-                throw new NoSuchEntityException(__('Requested entity doesn\'t exist'));
+                throw new NoSuchEntityException(
+                    __("The entity that was requested doesn't exist. Verify the entity and try again.")
+                );
             }
+            $this->setOrderTaxDetails($entity);
             $this->setShippingAssignments($entity);
+            $this->setPaymentAdditionalInfo($entity);
             $this->registry[$id] = $entity;
         }
         return $this->registry[$id];
+    }
+
+    /**
+     * Set order tax details to extension attributes.
+     *
+     * @param OrderInterface $order
+     * @return void
+     */
+    private function setOrderTaxDetails(OrderInterface $order)
+    {
+        $extensionAttributes = $order->getExtensionAttributes();
+        $orderTaxDetails = $this->orderTaxManagement->getOrderTaxDetails($order->getEntityId());
+        $appliedTaxes = $orderTaxDetails->getAppliedTaxes();
+
+        $extensionAttributes->setAppliedTaxes($appliedTaxes);
+        if (!empty($appliedTaxes)) {
+            $extensionAttributes->setConvertingFromQuote(true);
+        }
+
+        $items = $orderTaxDetails->getItems();
+        $extensionAttributes->setItemAppliedTaxes($items);
+
+        $order->setExtensionAttributes($extensionAttributes);
+    }
+
+    /**
+     * Set additional info to the order.
+     *
+     * @param OrderInterface $order
+     * @return void
+     */
+    private function setPaymentAdditionalInfo(OrderInterface $order): void
+    {
+        $extensionAttributes = $order->getExtensionAttributes();
+        $paymentAdditionalInformation = $order->getPayment()->getAdditionalInformation();
+
+        $objects = [];
+        foreach ($paymentAdditionalInformation as $key => $value) {
+            /** @var PaymentAdditionalInfoInterface $additionalInformationObject */
+            $additionalInformationObject = $this->paymentAdditionalInfoFactory->create();
+            $additionalInformationObject->setKey($key);
+
+            if (!is_string($value)) {
+                $value = $this->serializer->serialize($value);
+            }
+            $additionalInformationObject->setValue($value);
+
+            $objects[] = $additionalInformationObject;
+        }
+        $extensionAttributes->setPaymentAdditionalInfo($objects);
+        $order->setExtensionAttributes($extensionAttributes);
     }
 
     /**
@@ -115,6 +202,8 @@ class OrderRepository implements \Magento\Sales\Api\OrderRepositoryInterface
         $searchResult->setSearchCriteria($searchCriteria);
         foreach ($searchResult->getItems() as $order) {
             $this->setShippingAssignments($order);
+            $this->setOrderTaxDetails($order);
+            $this->setPaymentAdditionalInfo($order);
         }
         return $searchResult;
     }
@@ -168,6 +257,8 @@ class OrderRepository implements \Magento\Sales\Api\OrderRepositoryInterface
     }
 
     /**
+     * Set shipping assignments to extension attributes.
+     *
      * @param OrderInterface $order
      * @return void
      */
@@ -210,7 +301,7 @@ class OrderRepository implements \Magento\Sales\Api\OrderRepositoryInterface
      * @param \Magento\Framework\Api\Search\FilterGroup $filterGroup
      * @param \Magento\Sales\Api\Data\OrderSearchResultInterface $searchResult
      * @return void
-     * @deprecated 100.2.0
+     * @deprecated 101.0.0
      * @throws \Magento\Framework\Exception\InputException
      */
     protected function addFilterGroupToCollection(

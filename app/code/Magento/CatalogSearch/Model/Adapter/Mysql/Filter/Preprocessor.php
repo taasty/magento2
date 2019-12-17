@@ -25,6 +25,8 @@ use Magento\CatalogSearch\Model\Search\FilterMapper\VisibilityFilter;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @deprecated 101.0.0
+ * @see \Magento\ElasticSearch
  */
 class Preprocessor implements PreprocessorInterface
 {

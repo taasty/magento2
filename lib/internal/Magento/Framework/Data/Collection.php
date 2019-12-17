@@ -14,6 +14,7 @@ use Magento\Framework\Option\ArrayInterface;
  * TODO: Refactor use of \Magento\Framework\Option\ArrayInterface in library.
  *
  * @api
+ * @since 100.0.2
  */
 class Collection implements \IteratorAggregate, \Countable, ArrayInterface, CollectionDataSourceInterface
 {
@@ -285,7 +286,7 @@ class Collection implements \IteratorAggregate, \Countable, ArrayInterface, Coll
         if ($this->_totalRecords === null) {
             $this->_totalRecords = count($this->getItems());
         }
-        return intval($this->_totalRecords);
+        return (int)$this->_totalRecords;
     }
 
     /**
@@ -487,12 +488,11 @@ class Collection implements \IteratorAggregate, \Countable, ArrayInterface, Coll
     }
 
     /**
-     * Walk through the collection and run model method or external callback
-     * with optional arguments
+     * Walk through the collection and run model method or external callback with optional arguments
      *
      * Returns array with results of callback for each item
      *
-     * @param string $callback
+     * @param callable $callback
      * @param array $args
      * @return array
      */
@@ -743,7 +743,7 @@ class Collection implements \IteratorAggregate, \Countable, ArrayInterface, Coll
     /**
      * Convert items array to array for select options
      *
-     * return items array
+     * Return items array
      * array(
      *      $index => array(
      *          'value' => mixed
@@ -772,6 +772,8 @@ class Collection implements \IteratorAggregate, \Countable, ArrayInterface, Coll
     }
 
     /**
+     * Returns option array
+     *
      * @return array
      */
     public function toOptionArray()
@@ -780,6 +782,8 @@ class Collection implements \IteratorAggregate, \Countable, ArrayInterface, Coll
     }
 
     /**
+     * Returns options hash
+     *
      * @return array
      */
     public function toOptionHash()
@@ -790,12 +794,12 @@ class Collection implements \IteratorAggregate, \Countable, ArrayInterface, Coll
     /**
      * Convert items array to hash for select options
      *
-     * return items hash
+     * Return items hash
      * array($value => $label)
      *
-     * @param   string $valueField
-     * @param   string $labelField
-     * @return  array
+     * @param string $valueField
+     * @param string $labelField
+     * @return array
      */
     protected function _toOptionHash($valueField = 'id', $labelField = 'name')
     {
@@ -809,8 +813,8 @@ class Collection implements \IteratorAggregate, \Countable, ArrayInterface, Coll
     /**
      * Retrieve item by id
      *
-     * @param   mixed $idValue
-     * @return  \Magento\Framework\DataObject
+     * @param mixed $idValue
+     * @return \Magento\Framework\DataObject
      */
     public function getItemById($idValue)
     {
@@ -851,7 +855,7 @@ class Collection implements \IteratorAggregate, \Countable, ArrayInterface, Coll
      */
     public function getFlag($flag)
     {
-        return isset($this->_flags[$flag]) ? $this->_flags[$flag] : null;
+        return $this->_flags[$flag] ?? null;
     }
 
     /**
@@ -879,6 +883,8 @@ class Collection implements \IteratorAggregate, \Countable, ArrayInterface, Coll
     }
 
     /**
+     * Sleep handler
+     *
      * @return string[]
      * @since 100.0.11
      */

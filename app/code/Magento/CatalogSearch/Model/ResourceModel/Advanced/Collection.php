@@ -17,9 +17,11 @@ use Magento\Framework\Search\Request\NonExistingRequestNameException;
 use Magento\Catalog\Model\ResourceModel\Product\Collection\ProductLimitationFactory;
 
 /**
- * Collection Advanced
+ * Advanced search collection
  *
- * @author      Magento Core Team <core@magentocommerce.com>
+ * This collection should be refactored to not have dependencies on MySQL-specific implementation.
+ *
+ * @SuppressWarnings(PHPMD.CookieAndSessionMisuse)
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  * @api
  * @since 100.0.2
@@ -39,6 +41,7 @@ class Collection extends \Magento\Catalog\Model\ResourceModel\Product\Collection
 
     /**
      * @var \Magento\Framework\Search\Adapter\Mysql\TemporaryStorageFactory
+     * @deprecated 101.0.0 There must be no dependencies on specific adapter in generic search implementation
      */
     private $temporaryStorageFactory;
 
@@ -187,7 +190,7 @@ class Collection extends \Magento\Catalog\Model\ResourceModel\Product\Collection
             } catch (NonExistingRequestNameException $e) {
                 $this->_logger->error($e->getMessage());
                 throw new LocalizedException(
-                    __('Sorry, something went wrong. You can find out more in the error log.')
+                    __('An error occurred. For details, see the error log.')
                 );
             }
             $temporaryStorage = $this->temporaryStorageFactory->create();
@@ -205,6 +208,8 @@ class Collection extends \Magento\Catalog\Model\ResourceModel\Product\Collection
     }
 
     /**
+     * Get attribute code.
+     *
      * @param string $attributeCode
      * @return string
      */
@@ -264,6 +269,8 @@ class Collection extends \Magento\Catalog\Model\ResourceModel\Product\Collection
     }
 
     /**
+     * Get search.
+     *
      * @return \Magento\Search\Api\SearchInterface
      */
     private function getSearch()
@@ -276,6 +283,8 @@ class Collection extends \Magento\Catalog\Model\ResourceModel\Product\Collection
     }
 
     /**
+     * Get search criteria builder.
+     *
      * @return SearchCriteriaBuilder
      */
     private function getSearchCriteriaBuilder()
@@ -288,6 +297,8 @@ class Collection extends \Magento\Catalog\Model\ResourceModel\Product\Collection
     }
 
     /**
+     * Get filter builder.
+     *
      * @return FilterBuilder
      */
     private function getFilterBuilder()

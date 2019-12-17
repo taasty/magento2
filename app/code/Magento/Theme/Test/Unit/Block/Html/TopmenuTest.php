@@ -109,6 +109,9 @@ HTML;
         );
     }
 
+    /**
+     * @return Topmenu
+     */
     protected function getTopmenu()
     {
         return new Topmenu($this->context, $this->nodeFactory, $this->treeFactory);
@@ -116,7 +119,6 @@ HTML;
 
     public function testGetHtmlWithoutSelectedCategory()
     {
-        $this->markTestSkipped('Test needs to be refactored.');
         $topmenuBlock = $this->getTopmenu();
 
         $treeNode = $this->buildTree(false);
@@ -150,7 +152,6 @@ HTML;
 
     public function testGetHtmlWithSelectedCategory()
     {
-        $this->markTestSkipped('Test needs to be refactored.');
         $topmenuBlock = $this->getTopmenu();
 
         $treeNode = $this->buildTree(true);
@@ -188,7 +189,6 @@ HTML;
         $treeFactory = $this->createMock(\Magento\Framework\Data\TreeFactory::class);
 
         $topmenu =  new Topmenu($this->context, $nodeFactory, $treeFactory);
-        $this->urlBuilder->expects($this->once())->method('getUrl')->with('*/*/*')->willReturn('123');
         $this->urlBuilder->expects($this->once())->method('getBaseUrl')->willReturn('baseUrl');
         $store = $this->getMockBuilder(\Magento\Store\Model\Store::class)
             ->disableOriginalConstructor()
@@ -198,7 +198,7 @@ HTML;
         $this->storeManager->expects($this->once())->method('getStore')->willReturn($store);
 
         $this->assertEquals(
-            ['BLOCK_TPL', '321', null, 'base_url' => 'baseUrl', 'template' => null, '123'],
+            ['BLOCK_TPL', '321', null, 'base_url' => 'baseUrl', 'template' => null],
             $topmenu->getCacheKeyInfo()
         );
     }
@@ -254,7 +254,11 @@ HTML;
         $nodeMock->expects($this->once())
             ->method('getChildren')
             ->willReturn($children);
-        $nodeMock->expects($this->any())
+        $nodeMock->expects($this->at(0))
+            ->method('__call')
+            ->with('setOutermostClass')
+            ->willReturn(null);
+        $nodeMock->expects($this->at(3))
             ->method('__call')
             ->with('getLevel', [])
             ->willReturn(null);

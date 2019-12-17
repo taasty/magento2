@@ -14,6 +14,7 @@ use \Magento\Framework\Data\Collection\AbstractDb;
  *
  * @api
  * @SuppressWarnings(PHPMD.NumberOfChildren)
+ * @since 100.0.2
  */
 abstract class AbstractCollection extends AbstractDb implements SourceProviderInterface
 {
@@ -44,6 +45,13 @@ abstract class AbstractCollection extends AbstractDb implements SourceProviderIn
      * @var array|null
      */
     protected $_fieldsToSelect = null;
+
+    /**
+     * Expression fields to select in query.
+     *
+     * @var array
+     */
+    private $expressionFieldsToSelect = [];
 
     /**
      * Fields initial fields to select like id_field
@@ -170,7 +178,7 @@ abstract class AbstractCollection extends AbstractDb implements SourceProviderIn
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     protected function _initSelect()
     {
@@ -205,7 +213,7 @@ abstract class AbstractCollection extends AbstractDb implements SourceProviderIn
         $columnsToSelect = [];
         foreach ($columns as $columnEntry) {
             list($correlationName, $column, $alias) = $columnEntry;
-            if ($correlationName !== 'main_table') {
+            if ($correlationName !== 'main_table' || isset($this->expressionFieldsToSelect[$alias])) {
                 // Add joined fields to select
                 if ($column instanceof \Zend_Db_Expr) {
                     $column = $column->__toString();
@@ -347,6 +355,7 @@ abstract class AbstractCollection extends AbstractDb implements SourceProviderIn
         }
 
         $this->getSelect()->columns([$alias => $fullExpression]);
+        $this->expressionFieldsToSelect[$alias] = $fullExpression;
 
         return $this;
     }
@@ -496,9 +505,9 @@ abstract class AbstractCollection extends AbstractDb implements SourceProviderIn
     /**
      * Join table to collection select
      *
-     * @param string $table
+     * @param string|array $table
      * @param string $cond
-     * @param string $cols
+     * @param string|array $cols
      * @return $this
      */
     public function join($table, $cond, $cols = '*')
