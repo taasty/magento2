@@ -5,6 +5,9 @@
  */
 namespace Magento\Eav\Test\Unit\Model\Entity\Collection;
 
+use Magento\Framework\Data\Collection\Db\FetchStrategyInterface;
+use Magento\Framework\Model\ResourceModel\ResourceModelPoolInterface;
+
 /**
  * AbstractCollection test
  *
@@ -28,7 +31,7 @@ class AbstractCollectionTest extends \PHPUnit\Framework\TestCase
     protected $loggerMock;
 
     /**
-     * @var \Magento\Framework\Data\Collection\Db\FetchStrategyInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @var FetchStrategyInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $fetchStrategyMock;
 
@@ -58,7 +61,7 @@ class AbstractCollectionTest extends \PHPUnit\Framework\TestCase
     protected $resourceHelperMock;
 
     /**
-     * @var \Magento\Framework\Validator\UniversalFactory|\PHPUnit_Framework_MockObject_MockObject
+     * @var ResourceModelPoolInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $validatorFactoryMock;
 
@@ -136,6 +139,21 @@ class AbstractCollectionTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * Test method \Magento\Eav\Model\Entity\Collection\AbstractCollection::load
+     */
+    public function testLoad()
+    {
+        $this->fetchStrategyMock
+            ->expects($this->once())
+            ->method('fetchAll')
+            ->will($this->returnValue([['id' => 1, 'data_changes' => true], ['id' => 2]]));
+
+        foreach ($this->model->getItems() as $item) {
+            $this->assertFalse($item->getDataChanges());
+        }
+    }
+
+    /**
      * @dataProvider getItemsDataProvider
      */
     public function testClear($values, $count)
@@ -178,6 +196,9 @@ class AbstractCollectionTest extends \PHPUnit\Framework\TestCase
         $this->assertNull($this->model->getItemById($testId));
     }
 
+    /**
+     * @return array
+     */
     public function getItemsDataProvider()
     {
         return [
@@ -187,6 +208,9 @@ class AbstractCollectionTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
+    /**
+     * @return \Magento\Framework\DataObject
+     */
     public function getMagentoObject()
     {
         return new \Magento\Framework\DataObject();

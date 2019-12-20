@@ -20,10 +20,11 @@
                     <input type="number"
                            name="qty"
                            id="qty"
+                           min="0"
                            value=""
                            title="<?= /* @escapeNotVerified */ __('Qty') ?>"
                            class="input-text qty"
-                           data-validate="{'required-number':true,digits:true}"/>
+                           data-validate="<?= $block->escapeHtml(json_encode($block->getQuantityValidators())) ?>"/>
                 </div>
             </div>
             <?php endif; ?>

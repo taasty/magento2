@@ -28,6 +28,7 @@ use Magento\Framework\DB\Adapter\AdapterInterface;
  * @method \Magento\Framework\DB\Select distinct($flag = true)
  * @method \Magento\Framework\DB\Select reset($part = null)
  * @method \Magento\Framework\DB\Select columns($cols = '*', $correlationName = null)
+ * @since 100.0.2
  */
 class Select extends \Zend_Db_Select
 {
@@ -467,9 +468,9 @@ class Select extends \Zend_Db_Select
     /**
      * Add EXISTS clause
      *
-     * @param  Select $select
-     * @param  string           $joinCondition
-     * @param   bool            $isExists
+     * @param Select $select
+     * @param string $joinCondition
+     * @param bool $isExists
      * @return $this
      */
     public function exists($select, $joinCondition, $isExists = true)
@@ -509,6 +510,8 @@ class Select extends \Zend_Db_Select
     }
 
     /**
+     * Sleep magic method.
+     *
      * @return string[]
      * @since 100.0.11
      */

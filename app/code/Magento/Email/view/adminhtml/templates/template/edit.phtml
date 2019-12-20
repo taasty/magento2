@@ -50,7 +50,7 @@ use Magento\Framework\App\TemplateTypesInterface;
     <?= /* @noEscape */ $block->getFormHtml() ?>
 </form>
 
-<form action="<?= $block->escapeUrl($block->getPreviewUrl()) ?>" method="post" id="email_template_preview_form" target="_blank">
+<form action="<?= $block->escapeUrl($block->getPreviewUrl()) ?>" method="get" id="email_template_preview_form" target="_blank">
     <?= /* @noEscape */ $block->getBlockHtml('formkey') ?>
     <div class="no-display">
         <input type="hidden" id="preview_type" name="type" value="<?= /* @noEscape */ $block->isTextType() ? 1 : 2 ?>" />
@@ -61,10 +61,10 @@ use Magento\Framework\App\TemplateTypesInterface;
 <script>
 require([
     "jquery",
-    "tinymce",
+    "wysiwygAdapter",
     "Magento_Ui/js/modal/alert",
     "mage/mage",
-    "Magento_Variable/variables",
+    "Magento_Email/js/variables",
     "prototype"
 ], function(jQuery, tinyMCE, alert){
 
@@ -150,10 +150,10 @@ require([
             } else {
                 $('preview_type').value = <?= (int) $block->getTemplateType() ?>;
             }
-            if (typeof tinyMCE == 'undefined' || !tinyMCE.getInstanceById('template_text')) {
+            if (typeof tinyMCE == 'undefined' || !tinyMCE.get('template_text')) {
                 $('preview_text').value = $('template_text').value;
             } else {
-                $('preview_text').value = tinyMCE.getInstanceById('template_text').getHTML();
+                $('preview_text').value = tinyMCE.get('template_text').getHTML();
             }
 
             if ($('template_styles') != undefined) {

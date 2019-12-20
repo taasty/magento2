@@ -87,7 +87,7 @@ class SitemapTest extends \PHPUnit\Framework\TestCase
     private $configReaderMock;
 
     /**
-     * Set helper mocks, create resource model mock
+     * @inheritdoc
      */
     protected function setUp()
     {
@@ -162,7 +162,7 @@ class SitemapTest extends \PHPUnit\Framework\TestCase
      * Check not exists sitemap path validation
      *
      * @expectedException \Magento\Framework\Exception\LocalizedException
-     * @expectedExceptionMessage Please create the specified folder "" before saving the sitemap.
+     * @expectedExceptionMessage Please create the specified folder "/" before saving the sitemap.
      */
     public function testPathNotExists()
     {
@@ -365,7 +365,6 @@ class SitemapTest extends \PHPUnit\Framework\TestCase
      */
     public function testAddSitemapToRobotsTxt($maxLines, $maxFileSize, $expectedFile, $expectedWrites, $robotsInfo)
     {
-        $this->markTestSkipped('Test needs to be refactored.');
         $actualData = [];
         $model = $this->prepareSitemapModelMock(
             $actualData,
@@ -409,17 +408,18 @@ class SitemapTest extends \PHPUnit\Framework\TestCase
         };
 
         // Check that all expected lines were written
-        $this->fileMock->expects($this->exactly($expectedWrites))
-            ->method('write')
-            ->willReturnCallback($streamWriteCallback);
+        $this->fileMock->expects(
+            $this->exactly($expectedWrites)
+        )->method(
+            'write'
+        )->will(
+            $this->returnCallback($streamWriteCallback)
+        );
 
         $checkFileCallback = function ($file) use (&$currentFile) {
             $currentFile = $file;
-        };
-
-        // Check that all expected file descriptors were created
-        $this->directoryMock->expects($this->exactly(count($expectedFile)))
-            ->method('openFile')
+        };// Check that all expected file descriptors were created
+        $this->directoryMock->expects($this->exactly(count($expectedFile)))->method('openFile')
             ->willReturnCallback($checkFileCallback);
 
         // Check that all file descriptors were closed
@@ -527,7 +527,7 @@ class SitemapTest extends \PHPUnit\Framework\TestCase
             ->willReturn([
                 new SitemapItem('category.html', '1.0', 'daily', '2012-12-21 00:00:00'),
                 new SitemapItem('/category/sub-category.html', '1.0', 'daily', '2012-12-21 00:00:00'),
-                new SitemapItem('product.html', '0.5', 'monthly', '2012-12-21 00:00:00'),
+                new SitemapItem('product.html', '0.5', 'monthly', '0000-00-00 00:00:00'),
                 new SitemapItem(
                     'product2.html',
                     '0.5',
@@ -598,6 +598,9 @@ class SitemapTest extends \PHPUnit\Framework\TestCase
             ->getMockForAbstractClass();
 
         $objectManager = new ObjectManager($this);
+
+        $escaper = $objectManager->getObject(\Magento\Framework\Escaper::class);
+
         $constructArguments = $objectManager->getConstructArguments(
             Sitemap::class,
             [
@@ -609,6 +612,7 @@ class SitemapTest extends \PHPUnit\Framework\TestCase
                 'filesystem' => $this->filesystemMock,
                 'itemProvider' => $this->itemProviderMock,
                 'configReader' => $this->configReaderMock,
+                'escaper' => $escaper,
             ]
         );
         $constructArguments['resource'] = null;

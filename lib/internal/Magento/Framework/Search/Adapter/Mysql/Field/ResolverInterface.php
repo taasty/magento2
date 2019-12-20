@@ -6,13 +6,15 @@
 namespace Magento\Framework\Search\Adapter\Mysql\Field;
 
 /**
- * Interface \Magento\Framework\Search\Adapter\Mysql\Field\ResolverInterface
+ * MySQL search field resolver.
  *
+ * @deprecated 102.0.0
+ * @see \Magento\ElasticSearch
  */
 interface ResolverInterface
 {
     /**
-     * Resolve field
+     * Resolve field.
      *
      * @param array $fields
      * @return FieldInterface[]

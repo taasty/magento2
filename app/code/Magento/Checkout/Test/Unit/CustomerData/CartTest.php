@@ -113,7 +113,7 @@ class CartTest extends \PHPUnit\Framework\TestCase
 
         $storeMock = $this->createPartialMock(\Magento\Store\Model\System\Store::class, ['getWebsiteId']);
         $storeMock->expects($this->once())->method('getWebsiteId')->willReturn($websiteId);
-        $quoteMock->expects($this->once())->method('getStore')->willReturn($storeMock);
+        $quoteMock->expects($this->any())->method('getStore')->willReturn($storeMock);
 
         $productMock = $this->createPartialMock(
             \Magento\Catalog\Model\Product::class,
@@ -160,7 +160,9 @@ class CartTest extends \PHPUnit\Framework\TestCase
             ],
             'extra_actions' => '<span>Buttons</span>',
             'isGuestCheckoutAllowed' => 1,
-            'website_id' => $websiteId
+            'website_id' => $websiteId,
+            'subtotalAmount' => 200,
+            'storeId' => null
         ];
         $this->assertEquals($expectedResult, $this->model->getSectionData());
     }
@@ -198,7 +200,7 @@ class CartTest extends \PHPUnit\Framework\TestCase
 
         $storeMock = $this->createPartialMock(\Magento\Store\Model\System\Store::class, ['getWebsiteId']);
         $storeMock->expects($this->once())->method('getWebsiteId')->willReturn($websiteId);
-        $quoteMock->expects($this->once())->method('getStore')->willReturn($storeMock);
+        $quoteMock->expects($this->any())->method('getStore')->willReturn($storeMock);
 
         $this->checkoutCartMock->expects($this->once())->method('getSummaryQty')->willReturn($summaryQty);
         $this->checkoutHelperMock->expects($this->once())
@@ -262,7 +264,9 @@ class CartTest extends \PHPUnit\Framework\TestCase
             ],
             'extra_actions' => '<span>Buttons</span>',
             'isGuestCheckoutAllowed' => 1,
-            'website_id' => $websiteId
+            'website_id' => $websiteId,
+            'subtotalAmount' => 200,
+            'storeId' => null
         ];
         $this->assertEquals($expectedResult, $this->model->getSectionData());
     }

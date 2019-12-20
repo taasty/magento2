@@ -150,7 +150,7 @@ class Filter extends \Magento\Framework\Filter\Template
 
     /**
      * @var \Pelago\Emogrifier
-     * @deprecated
+     * @deprecated 100.2.0
      */
     protected $emogrifier;
 
@@ -160,7 +160,7 @@ class Filter extends \Magento\Framework\Filter\Template
     private $cssInliner;
 
     /**
-     * @var \Magento\Email\Model\Source\Variables
+     * @var \Magento\Variable\Model\Source\Variables
      */
     protected $configVariables;
 
@@ -187,7 +187,7 @@ class Filter extends \Magento\Framework\Filter\Template
      * @param \Magento\Framework\App\State $appState
      * @param \Magento\Framework\UrlInterface $urlModel
      * @param \Pelago\Emogrifier $emogrifier
-     * @param \Magento\Email\Model\Source\Variables $configVariables
+     * @param \Magento\Variable\Model\Source\Variables $configVariables
      * @param array $variables
      * @param \Magento\Framework\Css\PreProcessor\Adapter\CssInliner|null $cssInliner
      *
@@ -206,7 +206,7 @@ class Filter extends \Magento\Framework\Filter\Template
         \Magento\Framework\App\State $appState,
         \Magento\Framework\UrlInterface $urlModel,
         \Pelago\Emogrifier $emogrifier,
-        \Magento\Email\Model\Source\Variables $configVariables,
+        \Magento\Variable\Model\Source\Variables $configVariables,
         $variables = [],
         \Magento\Framework\Css\PreProcessor\Adapter\CssInliner $cssInliner = null
     ) {
@@ -321,6 +321,8 @@ class Filter extends \Magento\Framework\Filter\Template
     }
 
     /**
+     * Get Css processor
+     *
      * @deprecated 100.1.2
      * @return Css\Processor
      */
@@ -333,6 +335,8 @@ class Filter extends \Magento\Framework\Filter\Template
     }
 
     /**
+     * Get pub directory
+     *
      * @deprecated 100.1.2
      * @param string $dirType
      * @return ReadInterface
@@ -516,13 +520,14 @@ class Filter extends \Magento\Framework\Filter\Template
      */
     public function mediaDirective($construction)
     {
-        $params = $this->getParameters($construction[2]);
+        $params = $this->getParameters(html_entity_decode($construction[2], ENT_QUOTES));
         return $this->_storeManager->getStore()
             ->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA) . $params['url'];
     }
 
     /**
      * Retrieve store URL directive
+     *
      * Support url and direct_url properties
      *
      * @param string[] $construction
@@ -849,7 +854,7 @@ class Filter extends \Magento\Framework\Filter\Template
             return $css;
         } else {
             // Return CSS comment for debugging purposes
-            return '/* ' . sprintf(__('Contents of %s could not be loaded or is empty'), $file) . ' */';
+            return '/* ' . __('Contents of the specified CSS file could not be loaded or is empty') . ' */';
         }
     }
 
@@ -958,6 +963,8 @@ class Filter extends \Magento\Framework\Filter\Template
     }
 
     /**
+     * Apply inline css
+     *
      * Merge HTML and CSS and return HTML that has CSS styles applied "inline" to the HTML tags. This is necessary
      * in order to support all email clients.
      *

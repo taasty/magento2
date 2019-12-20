@@ -9,11 +9,14 @@
  *
  * @author     Magento Core Team <core@magentocommerce.com>
  */
+
 namespace Magento\Catalog\Block\Product\View\Options;
 
 use Magento\Catalog\Pricing\Price\CustomOptionPriceInterface;
 
 /**
+ * Product aoptions section abstract block.
+ *
  * @api
  * @since 100.0.2
  */
@@ -46,7 +49,7 @@ abstract class AbstractOptions extends \Magento\Framework\View\Element\Template
     /**
      * @param \Magento\Framework\View\Element\Template\Context $context
      * @param \Magento\Framework\Pricing\Helper\Data $pricingHelper
-     * @param \Magento\Catalog\Helper\Data $catalogData,
+     * @param \Magento\Catalog\Helper\Data $catalogData
      * @param array $data
      */
     public function __construct(
@@ -105,9 +108,12 @@ abstract class AbstractOptions extends \Magento\Framework\View\Element\Template
     }
 
     /**
+     * Retrieve formatted price
+     *
      * @return string
+     * @since 102.0.6
      */
-    public function getFormatedPrice()
+    public function getFormattedPrice()
     {
         if ($option = $this->getOption()) {
             return $this->_formatPrice(
@@ -121,7 +127,20 @@ abstract class AbstractOptions extends \Magento\Framework\View\Element\Template
     }
 
     /**
-     * Return formated price
+     * Retrieve formatted price.
+     *
+     * @return string
+     *
+     * @deprecated 102.0.6
+     * @see getFormattedPrice()
+     */
+    public function getFormatedPrice()
+    {
+        return $this->getFormattedPrice();
+    }
+
+    /**
+     * Return formatted price
      *
      * @param array $value
      * @param bool $flag
@@ -178,7 +197,7 @@ abstract class AbstractOptions extends \Magento\Framework\View\Element\Template
      * Returns price converted to current currency rate
      *
      * @param float $price
-     * @return float
+     * @return float|string
      */
     public function getCurrencyPrice($price)
     {

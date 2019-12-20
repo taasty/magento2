@@ -5,6 +5,7 @@
  */
 namespace Magento\Ui\Controller\Adminhtml\Bookmark;
 
+use Magento\Framework\App\Action\HttpPostActionInterface as HttpPostActionInterface;
 use Magento\Authorization\Model\UserContextInterface;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\Json\DecoderInterface;
@@ -20,7 +21,7 @@ use Magento\Ui\Controller\Adminhtml\AbstractAction;
  *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
-class Save extends AbstractAction
+class Save extends AbstractAction implements HttpPostActionInterface
 {
     /**
      * Identifier for current bookmark
@@ -53,7 +54,7 @@ class Save extends AbstractAction
 
     /**
      * @var DecoderInterface
-     * @deprecated
+     * @deprecated 101.1.0
      */
     protected $jsonDecoder;
 

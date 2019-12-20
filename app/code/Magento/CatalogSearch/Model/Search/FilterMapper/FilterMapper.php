@@ -13,6 +13,9 @@ use Magento\CatalogInventory\Model\Stock;
 /**
  * Class FilterMapper
  * This class applies filters to Select based on SelectContainer configuration
+ *
+ * @deprecated 101.0.0
+ * @see \Magento\ElasticSearch
  */
 class FilterMapper
 {

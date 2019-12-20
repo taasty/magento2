@@ -21,6 +21,9 @@ use Magento\Search\Model\QueryFactory;
  * @method \Magento\CatalogSearch\Model\Fulltext setStoreId(int $value)
  * @method string getDataIndex()
  * @method \Magento\CatalogSearch\Model\Fulltext setDataIndex(string $value)
+ *
+ * @deprecated 101.0.0
+ * @see \Magento\ElasticSearch
  */
 class Fulltext extends \Magento\Framework\Model\AbstractModel
 {
@@ -73,6 +76,8 @@ class Fulltext extends \Magento\Framework\Model\AbstractModel
      * Reset search results cache
      *
      * @return $this
+     * @deprecated 101.0.0 Not used anymore
+     * @see \Magento\CatalogSearch\Model\ResourceModel\Fulltext::resetSearchResultsByStore
      */
     public function resetSearchResults()
     {

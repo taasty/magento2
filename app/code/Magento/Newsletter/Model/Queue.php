@@ -6,6 +6,8 @@
 namespace Magento\Newsletter\Model;
 
 use Magento\Framework\App\TemplateTypesInterface;
+use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
+use Magento\Framework\Stdlib\DateTime\Timezone\LocalizedDateToUtcConverterInterface;
 
 /**
  * Newsletter queue model.
@@ -110,6 +112,18 @@ class Queue extends \Magento\Framework\Model\AbstractModel implements TemplateTy
     protected $_transportBuilder;
 
     /**
+     * Timezone library.
+     *
+     * @var TimezoneInterface
+     */
+    private $timezone;
+
+    /**
+     * @var LocalizedDateToUtcConverterInterface
+     */
+    private $utcConverter;
+
+    /**
      * @param \Magento\Framework\Model\Context $context
      * @param \Magento\Framework\Registry $registry
      * @param \Magento\Newsletter\Model\Template\Filter $templateFilter
@@ -121,6 +135,8 @@ class Queue extends \Magento\Framework\Model\AbstractModel implements TemplateTy
      * @param \Magento\Framework\Model\ResourceModel\AbstractResource $resource
      * @param \Magento\Framework\Data\Collection\AbstractDb $resourceCollection
      * @param array $data
+     * @param TimezoneInterface $timezone
+     * @param LocalizedDateToUtcConverterInterface $utcConverter
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
@@ -134,7 +150,9 @@ class Queue extends \Magento\Framework\Model\AbstractModel implements TemplateTy
         \Magento\Newsletter\Model\Queue\TransportBuilder $transportBuilder,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
-        array $data = []
+        array $data = [],
+        TimezoneInterface $timezone = null,
+        LocalizedDateToUtcConverterInterface $utcConverter = null
     ) {
         parent::__construct(
             $context,
@@ -149,6 +167,10 @@ class Queue extends \Magento\Framework\Model\AbstractModel implements TemplateTy
         $this->_problemFactory = $problemFactory;
         $this->_subscribersCollection = $subscriberCollectionFactory->create();
         $this->_transportBuilder = $transportBuilder;
+
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $this->timezone = $timezone ?: $objectManager->get(TimezoneInterface::class);
+        $this->utcConverter = $utcConverter ?? $objectManager->get(LocalizedDateToUtcConverterInterface::class);
     }
 
     /**
@@ -183,8 +205,7 @@ class Queue extends \Magento\Framework\Model\AbstractModel implements TemplateTy
         if ($startAt === null || $startAt == '') {
             $this->setQueueStartAt(null);
         } else {
-            $time = (new \DateTime($startAt))->getTimestamp();
-            $this->setQueueStartAt($this->_date->gmtDate(null, $time));
+            $this->setQueueStartAt($this->utcConverter->convertLocalizedDateToUtc($startAt));
         }
         return $this;
     }

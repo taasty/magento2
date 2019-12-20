@@ -21,7 +21,7 @@ $fields = [
 ];
 $number = is_object($track) ? $track->getTracking() : $track['number'];
 ?>
-<table class="data table order tracking" id="tracking-table-popup-<?= /* @noEscape */ $number ?>">
+<table class="data table order tracking" id="tracking-table-popup-<?= $block->escapeHtml($number) ?>">
     <caption class="table-caption"><?= $block->escapeHtml(__('Order tracking')) ?></caption>
     <tbody>
     <?php if (is_object($track)): ?>
@@ -77,7 +77,7 @@ $number = is_object($track) ? $track->getTracking() : $track['number'];
 
             <?php if ($track->getDeliverydate()): ?>
                 <tr>
-                    <th class="col label" scope="row"><?= $block->escapeHtml(__('Delivered on:')) ?></th>
+                    <th class="col label" scope="row"><?= $block->escapeHtml($parentBlock->getDeliveryDateTitle()->getTitle($track)) ?></th>
                     <td class="col value">
                         <?= /* @noEscape */ $parentBlock->formatDeliveryDateTime($track->getDeliverydate(), $track->getDeliverytime()) ?>
                     </td>

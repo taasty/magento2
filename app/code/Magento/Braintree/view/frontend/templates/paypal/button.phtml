@@ -8,7 +8,7 @@
  * @var \Magento\Braintree\Block\Paypal\Button $block
  */
 
-$id = $block->getContainerId() . mt_rand();
+$id = $block->getContainerId() . random_int(0, PHP_INT_MAX);
 
 $config = [
     'Magento_Braintree/js/paypal/button' => [
@@ -29,6 +29,7 @@ $config = [
        class="action-braintree-paypal-logo" disabled>
         <img class="braintree-paypal-button-hidden"
              src="https://checkout.paypal.com/pwpp/2.17.6/images/pay-with-paypal.png"
-             alt="Pay with PayPal"/>
+             alt="<?= $block->escapeHtml(__('Pay with PayPal')) ?>"
+             title="<?= $block->escapeHtml(__('Pay with PayPal')) ?>"/>
     </button>
 </div>
