@@ -3,6 +3,7 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Framework\View\Element;
 
 use Magento\Framework\Config\DataInterface;
@@ -23,6 +24,7 @@ use Magento\Framework\View\Element\UiComponent\Factory\ComponentFactoryInterface
  *
  * @api
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @since 100.0.2
  */
 class UiComponentFactory extends DataObject
 {
@@ -48,7 +50,7 @@ class UiComponentFactory extends DataObject
     /**
      * UI component manager
      *
-     * @deprecated 100.2.0
+     * @deprecated 101.0.0
      * @var ManagerInterface
      */
     protected $componentManager;
@@ -73,10 +75,10 @@ class UiComponentFactory extends DataObject
      * @param ManagerInterface $componentManager
      * @param InterpreterInterface $argumentInterpreter
      * @param ContextFactory $contextFactory
-     * @param DataInterfaceFactory|null $configFactory
      * @param array $data
      * @param array $componentChildFactories
-     * @param DataInterface|null $definitionData
+     * @param DataInterface $definitionData
+     * @param DataInterfaceFactory $configFactory
      */
     public function __construct(
         ObjectManagerInterface $objectManager,
@@ -147,6 +149,14 @@ class UiComponentFactory extends DataObject
         }
         $components = array_filter($components);
         $componentArguments['components'] = $components;
+
+       /**
+        * Prevent passing ACL restricted blocks to htmlContent constructor
+        */
+        if (isset($componentArguments['block']) && !$componentArguments['block']) {
+            return null;
+        }
+
         if (!isset($componentArguments['context'])) {
             $componentArguments['context'] = $renderContext;
         }
@@ -256,14 +266,20 @@ class UiComponentFactory extends DataObject
 
         foreach ($children as $identifier => $config) {
             if (!isset($config['componentType'])) {
-                throw new LocalizedException(new Phrase(
-                    'The configuration parameter "componentType" is a required for "%1" component.',
-                    $identifier
-                ));
+                throw new LocalizedException(
+                    new Phrase(
+                        'The "componentType" configuration parameter is required for the "%1" component.',
+                        $identifier
+                    )
+                );
             }
 
             if (!isset($componentArguments['context'])) {
-                throw new LocalizedException(new \Magento\Framework\Phrase('Each UI component should have context.'));
+                throw new LocalizedException(
+                    new \Magento\Framework\Phrase(
+                        'An error occurred with the UI component. Each component needs context. Verify and try again.'
+                    )
+                );
             }
 
             $rawComponentData = $this->definitionData->get($config['componentType']);
@@ -373,10 +389,12 @@ class UiComponentFactory extends DataObject
 
             if (!$isMerged) {
                 if (!isset($data['arguments']['data']['config']['componentType'])) {
-                    throw new LocalizedException(new Phrase(
-                        'The configuration parameter "componentType" is a required for "%1" component.',
-                        [$name]
-                    ));
+                    throw new LocalizedException(
+                        new Phrase(
+                            'The "componentType" configuration parameter is required for the "%1" component.',
+                            [$name]
+                        )
+                    );
                 }
                 $rawComponentData = $this->definitionData->get(
                     $data['arguments']['data']['config']['componentType']

@@ -179,6 +179,9 @@ class PayflowproTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($paymentExpected->getData(), $payment->getData());
     }
 
+    /**
+     * @return array
+     */
     public function setTransStatusDataProvider()
     {
         return [
@@ -265,6 +268,97 @@ class PayflowproTest extends \PHPUnit\Framework\TestCase
         $this->payflowpro->capture($paymentMock, $amount);
         static::assertEquals($response['pnref'], $paymentMock->getTransactionId());
         static::assertFalse((bool)$paymentMock->getIsTransactionPending());
+    }
+
+    /**
+     * @return array
+     */
+    public function dataProviderCaptureAmountRounding()
+    {
+        return [
+            [
+                'amount' => 14.13999999999999999999999999999999999999999999999999,
+                'setAmount' => 49.99,
+                'expectedResult' => 14.14
+            ],
+            [
+                'amount' => 14.13199999999999999999999999999999999999999999999999,
+                'setAmount' => 49.99,
+                'expectedResult' => 14.13,
+            ],
+            [
+                'amount' => 14.14,
+                'setAmount' => 49.99,
+                'expectedResult' => 14.14,
+            ],
+            [
+                'amount' => 14.13999999999999999999999999999999999999999999999999,
+                'setAmount' => 14.14,
+                'expectedResult' => 0,
+            ]
+        ];
+    }
+
+    /**
+     * @param float $amount
+     * @param float $setAmount
+     * @param float $expectedResult
+     * @dataProvider dataProviderCaptureAmountRounding
+     */
+    public function testCaptureAmountRounding($amount, $setAmount, $expectedResult)
+    {
+        $paymentMock = $this->getPaymentMock();
+        $orderMock = $this->getMockBuilder(\Magento\Sales\Model\Order::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $infoInstanceMock = $this->getMockForAbstractClass(
+            InfoInterface::class,
+            [],
+            '',
+            false,
+            false,
+            false,
+            ['getAmountAuthorized','hasAmountPaid']
+        );
+
+        $infoInstanceMock->expects($this->once())
+            ->method('getAmountAuthorized')
+            ->willReturn($setAmount);
+        $infoInstanceMock->expects($this->once())
+            ->method('hasAmountPaid')
+            ->willReturn(true);
+        $this->payflowpro->setData('info_instance', $infoInstanceMock);
+
+        // test case to build basic request
+        $paymentMock->expects($this->once())
+            ->method('getAdditionalInformation')
+            ->with('pnref')
+            ->willReturn(false);
+        $paymentMock->expects($this->any())
+            ->method('getParentTransactionId')
+            ->willReturn(true);
+
+        $paymentMock->expects($this->once())
+            ->method('getOrder')
+            ->willReturn($orderMock);
+
+        $this->initStoreMock();
+        $response = $this->getGatewayResponseObject();
+        $this->gatewayMock->expects($this->once())
+            ->method('postRequest')
+            ->with(
+                $this->callback(function ($request) use ($expectedResult) {
+                    return is_callable([$request, 'getAmt']) && $request->getAmt() == $expectedResult;
+                }),
+                $this->isInstanceOf(PayflowConfig::class)
+            )
+            ->willReturn($response);
+
+        $this->payflowpro->capture($paymentMock, $amount);
+
+        $this->assertEquals($response['pnref'], $paymentMock->getTransactionId());
+        $this->assertFalse((bool)$paymentMock->getIsTransactionPending());
     }
 
     /**
@@ -484,6 +578,40 @@ class PayflowproTest extends \PHPUnit\Framework\TestCase
             ->willThrowException(new \Zend_Http_Client_Exception());
 
         $this->payflowpro->postRequest($request, $config);
+    }
+
+    /**
+     * @covers \Magento\Paypal\Model\Payflowpro::addRequestOrderInfo
+     */
+    public function testAddRequestOrderInfo()
+    {
+        $orderData = [
+            'id' => 1,
+            'increment_id' => '0000001'
+        ];
+        $data = [
+            'ponum' => $orderData['id'],
+            'custref' => $orderData['increment_id'],
+            'invnum' => $orderData['increment_id'],
+            'comment1' => $orderData['increment_id']
+        ];
+        $expectedData = new DataObject($data);
+        $actualData = new DataObject();
+
+        $orderMock = $this->getMockBuilder(\Magento\Sales\Model\Order::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getIncrementId', 'getId'])
+            ->getMock();
+        $orderMock->expects(static::once())
+            ->method('getId')
+            ->willReturn($orderData['id']);
+        $orderMock->expects(static::atLeastOnce())
+            ->method('getIncrementId')
+            ->willReturn($orderData['increment_id']);
+
+        $this->payflowpro->addRequestOrderInfo($actualData, $orderMock);
+
+        $this->assertEquals($expectedData, $actualData);
     }
 
     /**

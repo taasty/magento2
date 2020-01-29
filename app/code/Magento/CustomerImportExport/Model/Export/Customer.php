@@ -15,7 +15,7 @@ namespace Magento\CustomerImportExport\Model\Export;
  */
 class Customer extends \Magento\ImportExport\Model\Export\Entity\AbstractEav
 {
-    /**#@+
+    /**
      * Permanent column names.
      *
      * Names that begins with underscore is not an attribute. This name convention is for
@@ -27,23 +27,20 @@ class Customer extends \Magento\ImportExport\Model\Export\Entity\AbstractEav
 
     const COLUMN_STORE = '_store';
 
-    /**#@-*/
-
-    /**#@+
-     * Attribute collection name
+    /** Attribute collection name.
+     *
+     * Used to resolve entity attribute collection.
      */
     const ATTRIBUTE_COLLECTION_NAME = \Magento\Customer\Model\ResourceModel\Attribute\Collection::class;
 
-    /**#@-*/
-
-    /**#@+
+    /**
      * XML path to page size parameter
      */
     const XML_PATH_PAGE_SIZE = 'export/customer_page_size/customer';
 
-    /**#@-*/
-
-    /**#@-*/
+    /**
+     * @var array
+     */
     protected $_attributeOverrides = [
         'created_at' => ['backend_type' => 'datetime'],
         'reward_update_notification' => ['source_model' => \Magento\Eav\Model\Entity\Attribute\Source\Boolean::class],
@@ -112,7 +109,7 @@ class Customer extends \Magento\ImportExport\Model\Export\Entity\AbstractEav
             $data['customer_collection']
         ) ? $data['customer_collection'] : $customerColFactory->create();
 
-        $this->_initAttributeValues()->_initStores()->_initWebsites(true);
+        $this->_initAttributeValues()->_initAttributeTypes()->_initStores()->_initWebsites(true);
     }
 
     /**
@@ -143,12 +140,12 @@ class Customer extends \Magento\ImportExport\Model\Export\Entity\AbstractEav
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     protected function _getHeaderColumns()
     {
         $validAttributeCodes = $this->_getExportAttributeCodes();
-        return array_merge($this->_permanentAttributes, $validAttributeCodes, ['password']);
+        return array_merge($this->_permanentAttributes, $validAttributeCodes);
     }
 
     /**

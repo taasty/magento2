@@ -62,6 +62,7 @@ use Magento\Framework\Url\HostChecker;
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  * @SuppressWarnings(PHPMD.TooManyFields)
+ * @SuppressWarnings(PHPMD.CookieAndSessionMisuse)
  */
 class Url extends \Magento\Framework\DataObject implements \Magento\Framework\UrlInterface
 {
@@ -675,8 +676,7 @@ class Url extends \Magento\Framework\DataObject implements \Magento\Framework\Ur
     }
 
     /**
-     * Set Action name
-     * Reseted route path if action name has change
+     * Set Action name, reseated route path if action name has change
      *
      * @param string $data
      * @return \Magento\Framework\UrlInterface
@@ -1024,7 +1024,7 @@ class Url extends \Magento\Framework\DataObject implements \Magento\Framework\Ur
      *
      * @param string $value
      * @return string
-     * @deprecated 100.2.0
+     * @deprecated 101.0.0
      */
     public function escape($value)
     {
@@ -1067,14 +1067,14 @@ class Url extends \Magento\Framework\DataObject implements \Magento\Framework\Ur
              */
             // @codingStandardsIgnoreEnd
             function ($match) {
-                if ($this->useSessionIdForUrl($match[2] == 'S' ? true : false)) {
+                if ($this->useSessionIdForUrl($match[2] == 'S')) {
                     return $match[1] . $this->_sidResolver->getSessionIdQueryParam($this->_session) . '='
                         . $this->_session->getSessionId() . (isset($match[3]) ? $match[3] : '');
                 } else {
                     if ($match[1] == '?') {
                         return isset($match[3]) ? '?' : '';
                     } elseif ($match[1] == '&amp;' || $match[1] == '&') {
-                        return isset($match[3]) ? $match[3] : '';
+                        return $match[3] ?? '';
                     }
                 }
             },
@@ -1176,7 +1176,7 @@ class Url extends \Magento\Framework\DataObject implements \Magento\Framework\Ur
      * Gets URL modifier.
      *
      * @return \Magento\Framework\Url\ModifierInterface
-     * @deprecated 100.1.0
+     * @deprecated 101.0.0
      */
     private function getUrlModifier()
     {
@@ -1193,7 +1193,7 @@ class Url extends \Magento\Framework\DataObject implements \Magento\Framework\Ur
      * Get escaper
      *
      * @return Escaper
-     * @deprecated 100.2.0
+     * @deprecated 101.0.0
      */
     private function getEscaper()
     {
