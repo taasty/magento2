@@ -1,0 +1,108 @@
+<?xml version="1.0"?>
+<!--
+  ~ Copyright (c) 2019, Nosto Solutions Ltd
+  ~ All rights reserved.
+  ~
+  ~ Redistribution and use in source and binary forms, with or without modification,
+  ~ are permitted provided that the following conditions are met:
+  ~
+  ~ 1. Redistributions of source code must retain the above copyright notice,
+  ~ this list of conditions and the following disclaimer.
+  ~
+  ~ 2. Redistributions in binary form must reproduce the above copyright notice,
+  ~ this list of conditions and the following disclaimer in the documentation
+  ~ and/or other materials provided with the distribution.
+  ~
+  ~ 3. Neither the name of the copyright holder nor the names of its contributors
+  ~ may be used to endorse or promote products derived from this software without
+  ~ specific prior written permission.
+  ~
+  ~ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+  ~ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+  ~ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  ~ DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+  ~ ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+  ~ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+  ~ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+  ~ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+  ~ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+  ~ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  ~
+  ~ @author Nosto Solutions Ltd <contact@nosto.com>
+  ~ @copyright 2019 Nosto Solutions Ltd
+  ~ @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+  ~
+  -->
+<!--suppress XmlUnboundNsPrefix -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Magento\Framework\Stdlib\CookieManagerInterface" type="Magento\Framework\Stdlib\Cookie\PhpCookieManager"/>
+    <preference for="Nosto\Tagging\Api\Data\ProductQueueSearchResultsInterface" type="Nosto\Tagging\Model\Product\QueueSearchResults"/>
+    <type name="Magento\Catalog\Model\ResourceModel\Product">
+        <plugin name="nostoProductIndexer" type="Nosto\Tagging\Model\Indexer\Product\Observer"/>
+    </type>
+    <type name="Nosto\Tagging\Console\Command\NostoAccountConnectCommand">
+        <arguments>
+            <argument name="nostoHelperAccount" xsi:type="object">Nosto\Tagging\Helper\Account\Proxy</argument>
+            <argument name="nostoHelperScope" xsi:type="object">Nosto\Tagging\Helper\Scope\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Nosto\Tagging\Console\Command\NostoAccountRemoveCommand">
+        <arguments>
+            <argument name="nostoHelperAccount" xsi:type="object">Nosto\Tagging\Helper\Account\Proxy</argument>
+            <argument name="nostoHelperScope" xsi:type="object">Nosto\Tagging\Helper\Scope\Proxy</argument>
+            <argument name="appConfig" xsi:type="object">Magento\Framework\App\Config\Storage\Writer\Proxy</argument>
+            <argument name="nostoHelperCache" xsi:type="object">Nosto\Tagging\Helper\Cache\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Nosto\Tagging\Console\Command\NostoGenerateCustomerReferenceCommand">
+        <arguments>
+            <argument name="customerFactory" xsi:type="object">Magento\Customer\Model\CustomerFactory\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Nosto\Tagging\Logger\Logger">
+        <arguments>
+            <argument name="name" xsi:type="string">nosto</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="system" xsi:type="object">Magento\Framework\Logger\Handler\System</item>
+                <item name="debug" xsi:type="object">Magento\Framework\Logger\Handler\Debug</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Magento\Framework\Console\CommandList">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="nosto_account_connect_command" xsi:type="object">Nosto\Tagging\Console\Command\NostoAccountConnectCommand</item>
+                <item name="nosto_account_remove_command" xsi:type="object">Nosto\Tagging\Console\Command\NostoAccountRemoveCommand</item>
+                <item name="nosto_generate_customer_reference_command" xsi:type="object">Nosto\Tagging\Console\Command\NostoGenerateCustomerReferenceCommand</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Magento\Catalog\Model\Category\Attribute\Source\Sortby">
+        <plugin name="sortby_add_default_nosto_option" type="Nosto\Tagging\Plugin\Catalog\Model\Sortby" />
+    </type>
+    <type name="Magento\Sales\Api\OrderRepositoryInterface">
+        <plugin name="order_repository_nosto" type="Nosto\Tagging\Plugin\Sales\OrderRepository" />
+    </type>
+    <type name="Nosto\Tagging\Model\Product\Repository">
+        <arguments>
+            <argument name="productRepository" xsi:type="object">Magento\Catalog\Model\ProductRepository\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Nosto\Tagging\Model\Product\Service">
+        <arguments>
+            <argument name="nostoHelperAccount" xsi:type="object">Nosto\Tagging\Helper\Account\Proxy</argument>
+            <argument name="nostoHelperData" xsi:type="object">Nosto\Tagging\Helper\Data\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Nosto\Tagging\Model\Indexer\Product\Indexer">
+        <arguments>
+            <argument name="nostoHelperAccount" xsi:type="object">Nosto\Tagging\Helper\Account\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Nosto\Tagging\Helper\Customer">
+        <arguments>
+            <argument name="customerSession" xsi:type="object">Magento\Customer\Model\Session\Proxy</argument>
+        </arguments>
+    </type>
+</config>
